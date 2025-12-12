@@ -242,11 +242,17 @@ class PDS_Post_Tables_Shortcode {
      */
     private function build_tabulator_columns($config) {
         $columns = [];
-        
+
         foreach ($config['columns'] as $column) {
-            // For ACF fields, re-check the actual field type to catch WYSIWYG fields
+            // Check for type override in column defaults first
+            $column_defaults = $config['column_defaults'][$column['id']] ?? [];
+            $type_override = !empty($column_defaults['type_override']) ? $column_defaults['type_override'] : null;
+
+            // Start with the stored column type
             $column_type = $column['type'];
-            if ($column['source'] === 'acf' && function_exists('acf_get_field')) {
+
+            // For ACF fields, re-check the actual field type to catch WYSIWYG fields (unless overridden)
+            if (!$type_override && $column['source'] === 'acf' && function_exists('acf_get_field')) {
                 $acf_field = acf_get_field($column['field_key']);
                 if ($acf_field && isset($acf_field['type'])) {
                     // Map ACF type to our type
@@ -265,7 +271,12 @@ class PDS_Post_Tables_Shortcode {
                     }
                 }
             }
-            
+
+            // Apply type override if set (takes highest priority)
+            if ($type_override) {
+                $column_type = $type_override;
+            }
+
             $col_def = [
                 'field' => $column['field_key'],
                 'title' => $column['label'] ?: $column['field_key'],
@@ -274,48 +285,48 @@ class PDS_Post_Tables_Shortcode {
                 'source' => $column['source'],
                 'colId' => $column['id'],
             ];
-            
+
             // Frozen column - stays visible when scrolling horizontally
             if (!empty($column['frozen'])) {
                 $col_def['frozen'] = true;
             }
-            
+
             // Mark as editable (JS will handle the actual editor)
             if ($column['editable'] && current_user_can('edit_posts')) {
                 $col_def['editable'] = true;
             }
-            
+
             // Add width if specified in defaults
-            if (!empty($config['column_defaults'][$column['id']]['width'])) {
-                $col_def['width'] = (int) $config['column_defaults'][$column['id']]['width'];
+            if (!empty($column_defaults['width'])) {
+                $col_def['width'] = (int) $column_defaults['width'];
             }
-            
+
             // Add horizontal align
-            if (!empty($config['column_defaults'][$column['id']]['align'])) {
-                $col_def['hozAlign'] = $config['column_defaults'][$column['id']]['align'];
+            if (!empty($column_defaults['align'])) {
+                $col_def['hozAlign'] = $column_defaults['align'];
             }
-            
+
             // Add max characters for truncation
-            if (!empty($config['column_defaults'][$column['id']]['max_chars'])) {
-                $col_def['maxChars'] = (int) $config['column_defaults'][$column['id']]['max_chars'];
+            if (!empty($column_defaults['max_chars'])) {
+                $col_def['maxChars'] = (int) $column_defaults['max_chars'];
             }
-            
+
             // Add custom sort order for select fields
-            if (!empty($config['column_defaults'][$column['id']]['sort_order'])) {
-                $col_def['sortOrder'] = $config['column_defaults'][$column['id']]['sort_order'];
+            if (!empty($column_defaults['sort_order'])) {
+                $col_def['sortOrder'] = $column_defaults['sort_order'];
             }
-            
-            // Store column type for formatting (use detected type)
+
+            // Store column type for formatting (uses override if set)
             $col_def['fieldType'] = $column_type;
-            
+
             // Store options for select fields ONLY
             if (!empty($column['options']) && $column_type === 'select') {
                 $col_def['fieldOptions'] = $column['options'];
             }
-            
+
             $columns[] = $col_def;
         }
-        
+
         return $columns;
     }
     
@@ -417,7 +428,8 @@ class PDS_Post_Tables_Shortcode {
         ?>
         <div class="<?php echo esc_attr(implode(' ', $classes)); ?>" id="<?php echo esc_attr($selector_id); ?>">
             <div class="pds-table-selector-header">
-                <select class="pds-table-selector-dropdown">
+                <label for="<?php echo esc_attr($selector_id); ?>-dropdown"><?php _e('Select Table', 'pds-post-tables'); ?></label>
+                <select class="pds-table-selector-dropdown" id="<?php echo esc_attr($selector_id); ?>-dropdown">
                     <option value=""><?php echo esc_html($atts['placeholder']); ?></option>
                     <?php foreach ($accessible_tables as $table) : ?>
                         <?php 
@@ -444,44 +456,122 @@ class PDS_Post_Tables_Shortcode {
         <style>
         .pds-table-selector-wrap {
             margin: 20px 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen-Sans, Ubuntu, Cantarell, "Helvetica Neue", sans-serif;
         }
         .pds-table-selector-header {
-            margin-bottom: 15px;
+            margin-bottom: 20px;
+            padding: 20px 24px;
+            background: linear-gradient(to bottom, #fafafa, #f5f5f5);
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+        }
+        .pds-table-selector-header label {
+            display: block;
+            font-size: 13px;
+            font-weight: 500;
+            color: #555;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
         }
         .pds-table-selector-dropdown {
-            padding: 10px 15px;
-            font-size: 16px;
-            min-width: 300px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
+            width: 100%;
+            max-width: 400px;
+            padding: 12px 16px;
+            font-size: 15px;
+            line-height: 1.4;
+            color: #333;
+            border: 1px solid #ccc;
+            border-radius: 6px;
             background: #fff;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23666' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 14px center;
+            background-size: 12px;
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            appearance: none;
+            cursor: pointer;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+        .pds-table-selector-dropdown:hover {
+            border-color: #999;
+        }
+        .pds-table-selector-dropdown:focus {
+            outline: none;
+            border-color: #666;
+            box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.08);
+        }
+        .pds-table-selector-dropdown option {
+            padding: 8px;
+        }
+        .pds-table-selector-content {
+            min-height: 200px;
         }
         .pds-table-selector-placeholder {
-            padding: 40px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 200px;
+            padding: 40px 20px;
             text-align: center;
-            background: #f9f9f9;
-            border: 1px dashed #ddd;
-            border-radius: 4px;
-            color: #666;
+            background: #fafafa;
+            border: 2px dashed #ddd;
+            border-radius: 8px;
+            color: #888;
+            font-size: 15px;
+        }
+        .pds-table-selector-placeholder::before {
+            content: '';
+            display: block;
+            width: 48px;
+            height: 48px;
+            margin-bottom: 16px;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%23ccc' stroke-width='1.5'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' d='M3.375 19.5h17.25m-17.25 0a1.125 1.125 0 01-1.125-1.125M3.375 19.5h7.5c.621 0 1.125-.504 1.125-1.125m-9.75 0V5.625m0 12.75v-1.5c0-.621.504-1.125 1.125-1.125m18.375 2.625V5.625m0 12.75c0 .621-.504 1.125-1.125 1.125m1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125m0 3.75h-7.5A1.125 1.125 0 0112 18.375m9.75-12.75c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125m19.5 0v1.5c0 .621-.504 1.125-1.125 1.125M2.25 5.625v1.5c0 .621.504 1.125 1.125 1.125m0 0h17.25m-17.25 0h7.5c.621 0 1.125.504 1.125 1.125M3.375 8.25c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125m17.25-3.75h-7.5c-.621 0-1.125.504-1.125 1.125m8.625-1.125c.621 0 1.125.504 1.125 1.125v1.5c0 .621-.504 1.125-1.125 1.125m-17.25 0h7.5m-7.5 0c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125M12 10.875v-1.5m0 1.5c0 .621-.504 1.125-1.125 1.125M12 10.875c0 .621.504 1.125 1.125 1.125m-2.25 0c.621 0 1.125.504 1.125 1.125M13.125 12h7.5m-7.5 0c-.621 0-1.125.504-1.125 1.125M20.625 12c.621 0 1.125.504 1.125 1.125v1.5c0 .621-.504 1.125-1.125 1.125m-17.25 0h7.5M12 14.625v-1.5m0 1.5c0 .621-.504 1.125-1.125 1.125M12 14.625c0 .621.504 1.125 1.125 1.125m-2.25 0c.621 0 1.125.504 1.125 1.125m0 0v1.5c0 .621-.504 1.125-1.125 1.125'/%3E%3C/svg%3E");
+            background-size: contain;
+            opacity: 0.6;
         }
         .pds-table-selector-loading {
-            padding: 40px;
-            text-align: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 200px;
+            padding: 40px 20px;
+            background: #fafafa;
+            border: 1px solid #e8e8e8;
+            border-radius: 8px;
+            color: #666;
+            font-size: 15px;
         }
         .pds-table-selector-loading::after {
             content: '';
             display: inline-block;
             width: 20px;
             height: 20px;
-            border: 2px solid #ddd;
-            border-top-color: #2271b1;
+            border: 2px solid #e0e0e0;
+            border-top-color: #666;
             border-radius: 50%;
             animation: pds-selector-spin 0.8s linear infinite;
-            margin-left: 10px;
-            vertical-align: middle;
+            margin-left: 12px;
         }
         @keyframes pds-selector-spin {
             to { transform: rotate(360deg); }
+        }
+        .pds-table-selector-login,
+        .pds-table-selector-empty {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 120px;
+            padding: 30px 20px;
+            background: #fafafa;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            color: #666;
+            font-size: 15px;
+            text-align: center;
         }
         </style>
         

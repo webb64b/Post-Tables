@@ -371,6 +371,7 @@ class PDS_Post_Tables_Admin_UI {
      */
     private function render_column_defaults_row($column, $defaults = []) {
         $default_values = [
+            'type_override' => '',
             'align' => 'left',
             'width' => '',
             'max_chars' => '',
@@ -385,15 +386,34 @@ class PDS_Post_Tables_Admin_UI {
             'font_weight' => 'normal',
         ];
         $defaults = wp_parse_args($defaults, $default_values);
-        $type = $column['type'];
+        $detected_type = $column['type'];
+        // Use override if set, otherwise use detected type
+        $type = !empty($defaults['type_override']) ? $defaults['type_override'] : $detected_type;
         ?>
-        <div class="pds-column-defaults-row" data-column-id="<?php echo esc_attr($column['id']); ?>" data-column-type="<?php echo esc_attr($type); ?>">
+        <div class="pds-column-defaults-row" data-column-id="<?php echo esc_attr($column['id']); ?>" data-column-type="<?php echo esc_attr($type); ?>" data-detected-type="<?php echo esc_attr($detected_type); ?>">
             <div class="pds-defaults-header">
                 <strong><?php echo esc_html($column['label'] ?: $column['id']); ?></strong>
-                <span class="pds-field-type">(<?php echo esc_html($type); ?>)</span>
+                <span class="pds-field-type">(<?php echo esc_html($detected_type); ?>)</span>
             </div>
-            
+
             <div class="pds-defaults-fields">
+                <!-- Field Type Override -->
+                <div class="pds-defaults-row pds-type-override-row">
+                    <label><?php _e('Field Type', 'pds-post-tables'); ?></label>
+                    <select data-default="type_override" class="pds-type-override-select">
+                        <option value="" <?php selected($defaults['type_override'], ''); ?>><?php echo esc_html(sprintf(__('Auto-detected: %s', 'pds-post-tables'), $detected_type)); ?></option>
+                        <option value="text" <?php selected($defaults['type_override'], 'text'); ?>><?php _e('Text', 'pds-post-tables'); ?></option>
+                        <option value="textarea" <?php selected($defaults['type_override'], 'textarea'); ?>><?php _e('Textarea', 'pds-post-tables'); ?></option>
+                        <option value="number" <?php selected($defaults['type_override'], 'number'); ?>><?php _e('Number', 'pds-post-tables'); ?></option>
+                        <option value="date" <?php selected($defaults['type_override'], 'date'); ?>><?php _e('Date', 'pds-post-tables'); ?></option>
+                        <option value="datetime" <?php selected($defaults['type_override'], 'datetime'); ?>><?php _e('Date/Time', 'pds-post-tables'); ?></option>
+                        <option value="select" <?php selected($defaults['type_override'], 'select'); ?>><?php _e('Select/Dropdown', 'pds-post-tables'); ?></option>
+                        <option value="boolean" <?php selected($defaults['type_override'], 'boolean'); ?>><?php _e('Boolean (Yes/No)', 'pds-post-tables'); ?></option>
+                        <option value="wysiwyg" <?php selected($defaults['type_override'], 'wysiwyg'); ?>><?php _e('WYSIWYG/HTML', 'pds-post-tables'); ?></option>
+                    </select>
+                    <span class="description" style="margin-left: 10px; color: #666;"><?php _e('Override if auto-detection is incorrect', 'pds-post-tables'); ?></span>
+                </div>
+
                 <div class="pds-defaults-row">
                     <label><?php _e('Align', 'pds-post-tables'); ?></label>
                     <select data-default="align">
@@ -401,7 +421,7 @@ class PDS_Post_Tables_Admin_UI {
                         <option value="center" <?php selected($defaults['align'], 'center'); ?>><?php _e('Center', 'pds-post-tables'); ?></option>
                         <option value="right" <?php selected($defaults['align'], 'right'); ?>><?php _e('Right', 'pds-post-tables'); ?></option>
                     </select>
-                    
+
                     <label><?php _e('Width', 'pds-post-tables'); ?></label>
                     <input type="number" data-default="width" value="<?php echo esc_attr($defaults['width']); ?>" placeholder="Auto" style="width: 70px;">
                     <span>px</span>

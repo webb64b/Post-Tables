@@ -504,9 +504,33 @@
      */
     function initColumnDefaults() {
         const $container = $('#pds-column-defaults-container');
-        
+
         // Update JSON on any change
         $container.on('change', '[data-default]', function() {
+            updateColumnDefaultsJson();
+        });
+
+        // Handle type override changes - show/hide relevant type-specific options
+        $container.on('change', '.pds-type-override-select', function() {
+            const $row = $(this).closest('.pds-column-defaults-row');
+            const overrideType = $(this).val();
+            const detectedType = $row.data('detected-type');
+            const effectiveType = overrideType || detectedType;
+
+            // Update the data-column-type attribute
+            $row.attr('data-column-type', effectiveType);
+
+            // Show/hide type-specific options
+            $row.find('[data-show-for]').each(function() {
+                const $el = $(this);
+                const showFor = $el.data('show-for').split(',');
+                if (showFor.indexOf(effectiveType) !== -1) {
+                    $el.show();
+                } else {
+                    $el.hide();
+                }
+            });
+
             updateColumnDefaultsJson();
         });
     }
@@ -518,26 +542,31 @@
         const $container = $('#pds-column-defaults-container');
         const columns = JSON.parse($('input[name="pds_table_columns"]').val() || '[]');
         const currentDefaults = JSON.parse($('input[name="pds_table_column_defaults"]').val() || '{}');
-        
+
         if (columns.length === 0) {
             $container.html('<p class="pds-no-columns">Add columns above to configure their formatting.</p>');
             return;
         }
-        
+
         $container.empty();
-        
+
         columns.forEach(function(column) {
             const defaults = currentDefaults[column.id] || {};
+            const detectedType = column.type;
+            // Use type_override if set, otherwise use detected type
+            const effectiveType = defaults.type_override || detectedType;
+
             const template = $('#tmpl-pds-column-defaults-row').html()
                 .replace(/\{\{id\}\}/g, column.id)
                 .replace(/\{\{label\}\}/g, column.label || column.field_key)
-                .replace(/\{\{type\}\}/g, column.type);
-            
+                .replace(/\{\{type\}\}/g, detectedType);
+
             const $row = $(template);
-            
-            // Update the data-column-type attribute
-            $row.attr('data-column-type', column.type);
-            
+
+            // Update the data attributes
+            $row.attr('data-column-type', effectiveType);
+            $row.attr('data-detected-type', detectedType);
+
             // Restore saved values
             for (const key in defaults) {
                 const $input = $row.find('[data-default="' + key + '"]');
@@ -547,24 +576,24 @@
                     $input.val(defaults[key]);
                 }
             }
-            
-            // Show/hide type-specific options based on data-show-for attribute
+
+            // Show/hide type-specific options based on effective type
             $row.find('[data-show-for]').each(function() {
                 const $el = $(this);
                 const showFor = $el.data('show-for').split(',');
-                if (showFor.indexOf(column.type) !== -1) {
+                if (showFor.indexOf(effectiveType) !== -1) {
                     $el.show();
                 } else {
                     $el.hide();
                 }
             });
-            
+
             $container.append($row);
         });
-        
+
         // Reinitialize color pickers
         initColorPickers();
-        
+
         updateColumnDefaultsJson();
     }
 

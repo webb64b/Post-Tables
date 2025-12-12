@@ -367,16 +367,8 @@
     text-align: center;
 }
 
-/* Table selector styles */
-.pds-table-selector-login,
-.pds-table-selector-empty {
-    padding: 30px;
-    background: #f9f9f9;
-    border: 1px solid #ddd;
-    border-radius: 4px;
-    color: #666;
-    text-align: center;
-}
+/* Table selector styles - main styles are inline in shortcode for self-contained output */
+/* These are fallback/override styles */
 
 .pds-table-title {
     margin-bottom: 15px;
@@ -404,34 +396,19 @@
     border-right: 1px solid #ddd;
 }
 
-/* Frozen columns - solid backgrounds and proper z-index to prevent overlap */
-.pds-post-table .tabulator-frozen {
-    background-color: #fff !important;
-}
-
-.pds-post-table .tabulator-frozen.tabulator-frozen-left {
-    border-right: 2px solid #ccc !important;
-    z-index: 10 !important;
-}
-
-.pds-post-table .tabulator-frozen.tabulator-frozen-right {
-    border-left: 2px solid #ccc !important;
-    z-index: 10 !important;
-}
-
-/* Frozen header cells need higher z-index than frozen data cells */
+/* Frozen HEADER columns only - solid backgrounds and proper z-index to prevent overlap */
+/* Note: Only apply to headers, data cells work fine and need their conditional formatting */
 .pds-post-table .tabulator-header .tabulator-frozen {
     background-color: #f5f5f5 !important;
     z-index: 11 !important;
 }
 
-/* Ensure even/odd row backgrounds don't make frozen cells transparent */
-.pds-post-table .tabulator-row.tabulator-row-even .tabulator-frozen {
-    background-color: #fafafa !important;
+.pds-post-table .tabulator-header .tabulator-frozen.tabulator-frozen-left {
+    border-right: 2px solid #ccc !important;
 }
 
-.pds-post-table .tabulator-row.tabulator-row-odd .tabulator-frozen {
-    background-color: #fff !important;
+.pds-post-table .tabulator-header .tabulator-frozen.tabulator-frozen-right {
+    border-left: 2px solid #ccc !important;
 }
 
 .pds-post-table .tabulator-header .tabulator-col:last-child {
