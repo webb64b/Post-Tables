@@ -13,14 +13,14 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
-define('PDS_POST_TABLES_VERSION', '1.5.0');
+define('PDS_POST_TABLES_VERSION', '1.6.0');
 define('PDS_POST_TABLES_PATH', plugin_dir_path(__FILE__));
 define('PDS_POST_TABLES_URL', plugin_dir_url(__FILE__));
 
 class PDS_Post_Tables {
-    
+
     private static $instance = null;
-    
+
     public $post_type;
     public $field_scanner;
     public $rest_controller;
@@ -28,6 +28,13 @@ class PDS_Post_Tables {
     public $shortcode;
     public $data_handler;
     public $realtime_sync;
+
+    // Automation system components
+    public $automation_post_type;
+    public $automation_engine;
+    public $automation_scheduler;
+    public $automation_admin;
+    public $automation_rest;
     
     public static function instance() {
         if (is_null(self::$instance)) {
@@ -49,6 +56,18 @@ class PDS_Post_Tables {
         require_once PDS_POST_TABLES_PATH . 'includes/class-admin-ui.php';
         require_once PDS_POST_TABLES_PATH . 'includes/class-shortcode.php';
         require_once PDS_POST_TABLES_PATH . 'includes/class-realtime-sync.php';
+
+        // Automation system classes
+        require_once PDS_POST_TABLES_PATH . 'includes/class-automation-post-type.php';
+        require_once PDS_POST_TABLES_PATH . 'includes/class-automation-conditions.php';
+        require_once PDS_POST_TABLES_PATH . 'includes/class-automation-placeholders.php';
+        require_once PDS_POST_TABLES_PATH . 'includes/class-automation-actions.php';
+        require_once PDS_POST_TABLES_PATH . 'includes/class-automation-triggers.php';
+        require_once PDS_POST_TABLES_PATH . 'includes/class-automation-history.php';
+        require_once PDS_POST_TABLES_PATH . 'includes/class-automation-engine.php';
+        require_once PDS_POST_TABLES_PATH . 'includes/class-automation-scheduler.php';
+        require_once PDS_POST_TABLES_PATH . 'includes/class-automation-admin.php';
+        require_once PDS_POST_TABLES_PATH . 'includes/class-automation-rest.php';
     }
     
     private function init_hooks() {
@@ -68,17 +87,35 @@ class PDS_Post_Tables {
         $this->admin_ui = new PDS_Post_Tables_Admin_UI($this->field_scanner);
         $this->shortcode = new PDS_Post_Tables_Shortcode($this->data_handler);
         $this->realtime_sync = new PDS_Post_Tables_Realtime_Sync($this->data_handler);
+
+        // Initialize automation system
+        $this->automation_post_type = new PDS_Post_Tables_Automation_Post_Type();
+        $this->automation_engine = new PDS_Post_Tables_Automation_Engine($this->data_handler, $this->field_scanner);
+        $this->automation_scheduler = new PDS_Post_Tables_Automation_Scheduler();
+        $this->automation_scheduler->set_engine($this->automation_engine);
+        $this->automation_admin = new PDS_Post_Tables_Automation_Admin($this->field_scanner);
+        $this->automation_admin->set_engine($this->automation_engine);
     }
     
     public function init_rest_api() {
         $this->rest_controller = new PDS_Post_Tables_REST_Controller($this->data_handler, $this->field_scanner);
         $this->rest_controller->register_routes();
+
+        // Register automation REST routes
+        $this->automation_rest = new PDS_Post_Tables_Automation_REST($this->field_scanner, $this->automation_engine);
+        $this->automation_rest->register_routes();
     }
     
     public function admin_scripts($hook) {
         global $post_type;
-        
-        if ($post_type !== 'pds_post_table') {
+
+        // Load scripts for Post Tables admin
+        if ($post_type !== 'pds_post_table' && $post_type !== 'pds_automation') {
+            return;
+        }
+
+        // Automation post type has its own script loading in automation admin class
+        if ($post_type === 'pds_automation') {
             return;
         }
         

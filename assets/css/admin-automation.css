@@ -1,0 +1,576 @@
+/**
+ * PDS Post Tables - Automation Builder Styles
+ */
+
+/* General Layout */
+.pds-automation-builder-wrap {
+    max-width: 900px;
+}
+
+.pds-section {
+    background: #fff;
+    border: 1px solid #ccd0d4;
+    border-radius: 4px;
+    padding: 20px;
+    margin-bottom: 20px;
+}
+
+.pds-section h3 {
+    margin-top: 0;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #eee;
+}
+
+.pds-section h4 {
+    margin: 15px 0 10px;
+}
+
+/* Field Rows */
+.pds-field-row {
+    margin-bottom: 15px;
+}
+
+.pds-field-row > label {
+    display: block;
+    font-weight: 600;
+    margin-bottom: 5px;
+}
+
+.pds-field-row input[type="text"],
+.pds-field-row input[type="number"],
+.pds-field-row input[type="email"],
+.pds-field-row input[type="time"],
+.pds-field-row select,
+.pds-field-row textarea {
+    width: 100%;
+    max-width: 400px;
+}
+
+.pds-field-row textarea {
+    max-width: 100%;
+}
+
+.pds-field-row .large-text {
+    max-width: 100%;
+}
+
+.pds-field-row .description {
+    color: #666;
+    font-style: italic;
+    margin-top: 5px;
+}
+
+/* Toggle Switch */
+.pds-toggle {
+    display: inline-flex;
+    align-items: center;
+    cursor: pointer;
+}
+
+.pds-toggle input {
+    display: none;
+}
+
+.pds-toggle-slider {
+    width: 40px;
+    height: 22px;
+    background: #ccc;
+    border-radius: 22px;
+    position: relative;
+    margin-right: 10px;
+    transition: background 0.2s;
+}
+
+.pds-toggle-slider:before {
+    content: '';
+    position: absolute;
+    width: 18px;
+    height: 18px;
+    background: #fff;
+    border-radius: 50%;
+    top: 2px;
+    left: 2px;
+    transition: transform 0.2s;
+}
+
+.pds-toggle input:checked + .pds-toggle-slider {
+    background: #2271b1;
+}
+
+.pds-toggle input:checked + .pds-toggle-slider:before {
+    transform: translateX(18px);
+}
+
+.pds-toggle-label {
+    font-weight: 600;
+}
+
+/* Source Section */
+.pds-source-section .pds-field-row label {
+    display: inline-block;
+    margin-right: 20px;
+    font-weight: normal;
+}
+
+.pds-source-section .pds-field-row label input {
+    margin-right: 5px;
+}
+
+/* Trigger Section */
+.pds-trigger-section .pds-trigger-options {
+    background: #f9f9f9;
+    padding: 15px;
+    border-radius: 4px;
+    margin: 15px 0;
+}
+
+.pds-trigger-conditions {
+    margin-top: 20px;
+    padding-top: 15px;
+    border-top: 1px solid #eee;
+}
+
+/* Actions Section */
+.pds-action {
+    background: #f9f9f9;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    padding: 15px;
+    margin-bottom: 15px;
+}
+
+.pds-action-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #ddd;
+}
+
+.pds-action-number {
+    font-weight: 600;
+    color: #1e1e1e;
+}
+
+.pds-action-options {
+    margin-top: 15px;
+}
+
+.pds-action-conditions {
+    margin-top: 15px;
+    padding-top: 15px;
+    border-top: 1px solid #ddd;
+}
+
+.pds-action-conditions summary {
+    cursor: pointer;
+    font-weight: 600;
+    color: #666;
+}
+
+.pds-action-conditions[open] summary {
+    margin-bottom: 10px;
+}
+
+/* Conditions */
+.pds-condition-group {
+    background: #fff;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    padding: 15px;
+}
+
+.pds-condition-logic {
+    margin-bottom: 10px;
+}
+
+.pds-condition-logic select {
+    font-weight: 600;
+}
+
+.pds-conditions-list {
+    margin-bottom: 10px;
+}
+
+.pds-condition-rule {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    margin-bottom: 8px;
+    flex-wrap: wrap;
+}
+
+.pds-condition-rule select,
+.pds-condition-rule input {
+    flex: 1;
+    min-width: 120px;
+}
+
+.pds-condition-rule .pds-condition-field {
+    flex: 2;
+}
+
+.pds-condition-rule .pds-condition-value {
+    flex: 2;
+}
+
+.pds-condition-nested {
+    position: relative;
+    margin: 10px 0;
+    padding-left: 20px;
+    border-left: 3px solid #2271b1;
+}
+
+.pds-condition-nested > .pds-remove-condition {
+    position: absolute;
+    right: 0;
+    top: 0;
+}
+
+.pds-condition-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 10px;
+}
+
+/* Consolidation Settings */
+.pds-consolidation-settings {
+    margin-top: 15px;
+    padding: 15px;
+    background: #fff;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+}
+
+.pds-consolidation-settings summary {
+    cursor: pointer;
+    font-weight: 600;
+}
+
+.pds-consolidation-settings[open] summary {
+    margin-bottom: 15px;
+}
+
+.pds-consolidation-options {
+    padding-top: 10px;
+}
+
+/* Conditional Branches */
+.pds-conditional-branches {
+    margin-bottom: 15px;
+}
+
+.pds-branch {
+    background: #fff;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    padding: 15px;
+    margin-bottom: 10px;
+}
+
+.pds-branch:first-child {
+    border-left: 3px solid #2271b1;
+}
+
+.pds-branch:not(:first-child) {
+    border-left: 3px solid #dba617;
+}
+
+.pds-branch-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.pds-branch-header strong {
+    color: #1e1e1e;
+}
+
+.pds-branch-conditions {
+    margin-bottom: 15px;
+}
+
+.pds-branch-actions {
+    padding-top: 10px;
+    border-top: 1px solid #eee;
+}
+
+.pds-branch-actions > strong {
+    display: block;
+    margin-bottom: 10px;
+}
+
+.pds-branch-actions-list {
+    margin-bottom: 10px;
+}
+
+/* Nested Actions */
+.pds-nested-action {
+    background: #f9f9f9;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    padding: 10px;
+    margin-bottom: 10px;
+}
+
+.pds-nested-action > select {
+    margin-right: 10px;
+}
+
+.pds-nested-action-options {
+    margin-top: 10px;
+}
+
+/* Schedule Section */
+.pds-schedule-section .pds-field-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.pds-schedule-section .pds-field-row label {
+    min-width: 120px;
+    margin-bottom: 0;
+}
+
+.pds-schedule-section .pds-field-row select,
+.pds-schedule-section .pds-field-row input {
+    width: auto;
+}
+
+/* Settings Section */
+.pds-settings-section .pds-field-row label {
+    font-weight: normal;
+    display: inline;
+}
+
+.pds-settings-section .pds-field-row label input {
+    margin-right: 8px;
+}
+
+/* Status Badges */
+.pds-status-badge {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 3px;
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+.pds-status-enabled {
+    background: #d4edda;
+    color: #155724;
+}
+
+.pds-status-disabled {
+    background: #e9ecef;
+    color: #6c757d;
+}
+
+.pds-status-success {
+    background: #d4edda;
+    color: #155724;
+}
+
+.pds-status-error {
+    background: #f8d7da;
+    color: #721c24;
+}
+
+.pds-status-partial {
+    background: #fff3cd;
+    color: #856404;
+}
+
+.pds-status-warning {
+    background: #fff3cd;
+    color: #856404;
+}
+
+/* Automation Status Box */
+.pds-automation-status-box p {
+    margin: 10px 0;
+}
+
+.pds-automation-status-box hr {
+    margin: 15px 0;
+}
+
+/* Loading State */
+.pds-automation-loading {
+    text-align: center;
+    padding: 40px;
+    color: #666;
+}
+
+.pds-automation-loading .spinner {
+    float: none;
+    margin-right: 10px;
+}
+
+/* Placeholders Modal */
+.pds-placeholders-modal {
+    position: fixed;
+    z-index: 100000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.pds-placeholders-modal .pds-modal-content {
+    background: #fff;
+    padding: 20px 30px;
+    max-width: 800px;
+    max-height: 80vh;
+    overflow-y: auto;
+    border-radius: 4px;
+    position: relative;
+}
+
+.pds-placeholders-modal .pds-modal-close {
+    position: absolute;
+    right: 15px;
+    top: 10px;
+    font-size: 24px;
+    cursor: pointer;
+    color: #666;
+}
+
+.pds-placeholders-modal .pds-modal-close:hover {
+    color: #000;
+}
+
+.pds-placeholders-modal h2 {
+    margin-top: 0;
+}
+
+.pds-placeholders-modal h3 {
+    margin-top: 20px;
+    margin-bottom: 10px;
+    text-transform: capitalize;
+}
+
+.pds-placeholders-modal table {
+    margin-bottom: 15px;
+}
+
+.pds-placeholders-modal code {
+    background: #f0f0f0;
+    padding: 2px 5px;
+    border-radius: 3px;
+}
+
+/* Cards for status page */
+.wrap .card {
+    max-width: 800px;
+    margin-bottom: 20px;
+}
+
+.wrap .card h2 {
+    margin-top: 0;
+}
+
+.wrap .card pre {
+    background: #f0f0f0;
+    padding: 10px;
+    overflow-x: auto;
+}
+
+/* Button styles */
+.pds-add-action,
+.pds-add-condition,
+.pds-add-condition-group,
+.pds-add-branch,
+.pds-add-nested-action {
+    margin-top: 5px;
+}
+
+.pds-remove-action,
+.pds-remove-condition,
+.pds-remove-branch,
+.pds-remove-nested-action {
+    color: #a00;
+    text-decoration: none;
+}
+
+.pds-remove-action:hover,
+.pds-remove-condition:hover,
+.pds-remove-branch:hover,
+.pds-remove-nested-action:hover {
+    color: #dc3232;
+}
+
+/* Responsive */
+@media screen and (max-width: 782px) {
+    .pds-condition-rule {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .pds-condition-rule select,
+    .pds-condition-rule input {
+        width: 100%;
+        margin-bottom: 5px;
+    }
+
+    .pds-schedule-section .pds-field-row {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+}
+
+/* Test automation button */
+.pds-test-automation {
+    margin-top: 10px;
+}
+
+/* History page */
+.pds-modal {
+    position: fixed;
+    z-index: 100000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+}
+
+.pds-modal .pds-modal-content {
+    background-color: #fff;
+    margin: 10% auto;
+    padding: 20px;
+    width: 60%;
+    max-width: 800px;
+    max-height: 70vh;
+    overflow: auto;
+    position: relative;
+    border-radius: 4px;
+}
+
+.pds-modal .pds-modal-close {
+    position: absolute;
+    right: 10px;
+    top: 5px;
+    font-size: 24px;
+    cursor: pointer;
+    color: #666;
+}
+
+#pds-details-content {
+    background: #f5f5f5;
+    padding: 15px;
+    overflow: auto;
+    max-height: 50vh;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    font-family: monospace;
+    font-size: 12px;
+}
