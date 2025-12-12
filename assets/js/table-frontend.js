@@ -228,9 +228,13 @@
             if (!field) {
                 return;
             }
-            
+
+            // Get colId from Tabulator column definition to look up our custom config
+            const colDef = cell.getColumn().getDefinition();
+            const configKey = colDef.colId || field;
+
             // Check our custom config map for this column
-            const colConfig = this.columnConfigMap?.[field];
+            const colConfig = this.columnConfigMap?.[configKey];
             if (!colConfig || !colConfig.editable) {
                 return;
             }
@@ -794,7 +798,9 @@
             this.config.columns.forEach(col => {
                 const fieldName = col.field;
                 const fieldType = col.fieldType || 'text';
-                
+                // Use colId as the unique key since field names can be duplicated across sources
+                const configKey = col.colId || fieldName;
+
                 // Determine editor type based on field type
                 let editorType = null;
                 if (col.editable && this.config.canEdit) {
@@ -823,11 +829,13 @@
                             break;
                     }
                 }
-                
+
                 // Store our custom config for reference
                 // We'll use this in handleCellDblClick to trigger the right editor
-                this.columnConfigMap[fieldName] = {
+                // Key by colId to handle duplicate field names from different sources
+                this.columnConfigMap[configKey] = {
                     fieldType: fieldType,
+                    fieldName: fieldName,
                     source: col.source || 'auto',
                     maxChars: col.maxChars || 0,
                     sortOrder: col.sortOrder || '',
@@ -848,6 +856,8 @@
                     width: col.width || undefined,
                     resizable: true,
                     formatter: (cell) => this.formatCell(cell, col),
+                    // Store colId for looking up our custom config (Tabulator allows custom props)
+                    colId: col.colId,
                 };
                 
                 // Custom sorter for select fields with defined sort order
@@ -1496,7 +1506,10 @@
          * Save a single cell immediately
          */
         saveCell(postId, fieldKey, value, cell) {
-            const colConfig = this.columnConfigMap?.[fieldKey] || {};
+            // Get colId from cell's column definition for config lookup
+            const colDef = cell.getColumn().getDefinition();
+            const configKey = colDef.colId || fieldKey;
+            const colConfig = this.columnConfigMap?.[configKey] || {};
             const source = colConfig.source || 'auto';
             
             cell.getElement().classList.add('pds-saving');
@@ -1561,7 +1574,13 @@
             
             // Save changes sequentially to avoid overwhelming the server
             for (const change of changes) {
-                const colConfig = this.columnConfigMap?.[change.fieldKey] || {};
+                // Get colId from cell's column definition for config lookup
+                let configKey = change.fieldKey;
+                if (change.cell) {
+                    const colDef = change.cell.getColumn().getDefinition();
+                    configKey = colDef.colId || change.fieldKey;
+                }
+                const colConfig = this.columnConfigMap?.[configKey] || {};
                 const source = colConfig.source || 'auto';
                 
                 try {
