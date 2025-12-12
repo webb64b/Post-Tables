@@ -2,7 +2,7 @@
 /**
  * Plugin Name: PDS Post Tables
  * Description: Display and edit WordPress posts in Excel-like tables with customizable columns and conditional formatting
- * Version: 1.0.4
+ * Version: 1.0.5
  * Author: PDS Build
  * Text Domain: pds-post-tables
  * GitHub Plugin URI: https://github.com/webb64b/Post-Tables
@@ -13,7 +13,7 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
-define('PDS_POST_TABLES_VERSION', '1.4.4');
+define('PDS_POST_TABLES_VERSION', '1.4.5');
 define('PDS_POST_TABLES_PATH', plugin_dir_path(__FILE__));
 define('PDS_POST_TABLES_URL', plugin_dir_url(__FILE__));
 
@@ -388,11 +388,17 @@ class PDS_Post_Tables {
      */
     private function build_tabulator_columns_for_ajax($config) {
         $columns = [];
-        
+
         foreach ($config['columns'] as $column) {
-            // For ACF fields, re-check the actual field type to catch WYSIWYG fields
+            // Check for type override in column defaults first
+            $column_defaults = $config['column_defaults'][$column['id']] ?? [];
+            $type_override = !empty($column_defaults['type_override']) ? $column_defaults['type_override'] : null;
+
+            // Start with the stored column type
             $column_type = $column['type'];
-            if ($column['source'] === 'acf' && function_exists('acf_get_field')) {
+
+            // For ACF fields, re-check the actual field type to catch WYSIWYG fields (unless overridden)
+            if (!$type_override && $column['source'] === 'acf' && function_exists('acf_get_field')) {
                 $acf_field = acf_get_field($column['field_key']);
                 if ($acf_field && isset($acf_field['type'])) {
                     // Map ACF type to our type
@@ -411,7 +417,12 @@ class PDS_Post_Tables {
                     }
                 }
             }
-            
+
+            // Apply type override if set (takes highest priority)
+            if ($type_override) {
+                $column_type = $type_override;
+            }
+
             $col_def = [
                 'field' => $column['field_key'],
                 'title' => $column['label'] ?: $column['field_key'],
@@ -420,47 +431,48 @@ class PDS_Post_Tables {
                 'source' => $column['source'],
                 'colId' => $column['id'],
             ];
-            
+
             // Frozen column
             if (!empty($column['frozen'])) {
                 $col_def['frozen'] = true;
             }
-            
+
             // Mark as editable (JS will handle the actual editor)
             if ($column['editable'] && current_user_can('edit_posts')) {
                 $col_def['editable'] = true;
             }
-            
+
             // Width
-            if (!empty($config['column_defaults'][$column['id']]['width'])) {
-                $col_def['width'] = (int) $config['column_defaults'][$column['id']]['width'];
+            if (!empty($column_defaults['width'])) {
+                $col_def['width'] = (int) $column_defaults['width'];
             }
-            
+
             // Align
-            if (!empty($config['column_defaults'][$column['id']]['align'])) {
-                $col_def['hozAlign'] = $config['column_defaults'][$column['id']]['align'];
+            if (!empty($column_defaults['align'])) {
+                $col_def['hozAlign'] = $column_defaults['align'];
             }
-            
+
             // Max characters for truncation
-            if (!empty($config['column_defaults'][$column['id']]['max_chars'])) {
-                $col_def['maxChars'] = (int) $config['column_defaults'][$column['id']]['max_chars'];
+            if (!empty($column_defaults['max_chars'])) {
+                $col_def['maxChars'] = (int) $column_defaults['max_chars'];
             }
-            
+
             // Custom sort order for select fields
-            if (!empty($config['column_defaults'][$column['id']]['sort_order'])) {
-                $col_def['sortOrder'] = $config['column_defaults'][$column['id']]['sort_order'];
+            if (!empty($column_defaults['sort_order'])) {
+                $col_def['sortOrder'] = $column_defaults['sort_order'];
             }
-            
+
+            // Store column type for formatting (uses override if set)
             $col_def['fieldType'] = $column_type;
-            
+
             // Store options for select fields ONLY
             if (!empty($column['options']) && $column_type === 'select') {
                 $col_def['fieldOptions'] = $column['options'];
             }
-            
+
             $columns[] = $col_def;
         }
-        
+
         return $columns;
     }
     

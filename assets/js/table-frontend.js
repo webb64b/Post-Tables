@@ -229,12 +229,15 @@
                 return;
             }
 
-            // Get colId from Tabulator column definition to look up our custom config
-            const colDef = cell.getColumn().getDefinition();
-            const configKey = colDef.colId || field;
+            // Get column index to look up our custom config
+            // Subtract 1 to account for row number column at index 0
+            const columns = this.table.getColumns();
+            const columnIndex = columns.findIndex(c => c === cell.getColumn());
+            // Adjust for row number column (first column)
+            const configIndex = columnIndex > 0 ? columnIndex - 1 : 0;
 
             // Check our custom config map for this column
-            const colConfig = this.columnConfigMap?.[configKey];
+            const colConfig = this.columnConfigMap?.[configIndex];
             if (!colConfig || !colConfig.editable) {
                 return;
             }
@@ -795,11 +798,13 @@
             // Store column config for reference (our custom props here, NOT in Tabulator column def)
             this.columnConfigMap = {};
             
+            // Track column index to handle duplicate field names
+            let columnIndex = 0;
+
             this.config.columns.forEach(col => {
                 const fieldName = col.field;
                 const fieldType = col.fieldType || 'text';
-                // Use colId as the unique key since field names can be duplicated across sources
-                const configKey = col.colId || fieldName;
+                const colId = col.colId || fieldName;
 
                 // Determine editor type based on field type
                 let editorType = null;
@@ -831,19 +836,21 @@
                 }
 
                 // Store our custom config for reference
-                // We'll use this in handleCellDblClick to trigger the right editor
-                // Key by colId to handle duplicate field names from different sources
-                this.columnConfigMap[configKey] = {
+                // Key by column index since field names can be duplicated across sources
+                // We'll look up by index from the cell's column position
+                this.columnConfigMap[columnIndex] = {
                     fieldType: fieldType,
                     fieldName: fieldName,
                     source: col.source || 'auto',
                     maxChars: col.maxChars || 0,
                     sortOrder: col.sortOrder || '',
                     fieldOptions: col.fieldOptions ? JSON.parse(JSON.stringify(col.fieldOptions)) : null,
-                    colId: col.colId,
+                    colId: colId,
                     editable: col.editable && this.config.canEdit,
                     editorType: editorType,
                 };
+
+                columnIndex++;
                 
                 // Build Tabulator column definition (only Tabulator-recognized options)
                 // NOTE: We do NOT set editor here - we handle editing manually via double-click
@@ -856,8 +863,6 @@
                     width: col.width || undefined,
                     resizable: true,
                     formatter: (cell) => this.formatCell(cell, col),
-                    // Store colId for looking up our custom config (Tabulator allows custom props)
-                    colId: col.colId,
                 };
                 
                 // Custom sorter for select fields with defined sort order
@@ -1506,10 +1511,11 @@
          * Save a single cell immediately
          */
         saveCell(postId, fieldKey, value, cell) {
-            // Get colId from cell's column definition for config lookup
-            const colDef = cell.getColumn().getDefinition();
-            const configKey = colDef.colId || fieldKey;
-            const colConfig = this.columnConfigMap?.[configKey] || {};
+            // Get column index for config lookup
+            const columns = this.table.getColumns();
+            const columnIndex = columns.findIndex(c => c === cell.getColumn());
+            const configIndex = columnIndex > 0 ? columnIndex - 1 : 0;
+            const colConfig = this.columnConfigMap?.[configIndex] || {};
             const source = colConfig.source || 'auto';
             
             cell.getElement().classList.add('pds-saving');
@@ -1574,13 +1580,14 @@
             
             // Save changes sequentially to avoid overwhelming the server
             for (const change of changes) {
-                // Get colId from cell's column definition for config lookup
-                let configKey = change.fieldKey;
+                // Get column index for config lookup
+                let configIndex = 0;
                 if (change.cell) {
-                    const colDef = change.cell.getColumn().getDefinition();
-                    configKey = colDef.colId || change.fieldKey;
+                    const columns = this.table.getColumns();
+                    const columnIndex = columns.findIndex(c => c === change.cell.getColumn());
+                    configIndex = columnIndex > 0 ? columnIndex - 1 : 0;
                 }
-                const colConfig = this.columnConfigMap?.[configKey] || {};
+                const colConfig = this.columnConfigMap?.[configIndex] || {};
                 const source = colConfig.source || 'auto';
                 
                 try {
