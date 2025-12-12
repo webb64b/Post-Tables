@@ -1838,48 +1838,82 @@
         }
         
         /**
-         * Update the pending changes indicator in toolbar
+         * Update the pending changes indicator in toolbar (smart save button)
          */
         updatePendingChangesUI() {
             const count = Object.keys(this.pendingChanges).length;
-            const indicator = this.wrapper.querySelector('.pds-pending-changes-indicator');
-            const saveBtn = this.wrapper.querySelector('.pds-save-changes-btn');
-            const discardBtn = this.wrapper.querySelector('.pds-discard-changes-btn');
-            
-            if (indicator) {
-                if (count > 0) {
-                    indicator.textContent = `${count} unsaved change${count !== 1 ? 's' : ''}`;
-                    indicator.classList.add('pds-has-changes');
-                } else {
-                    indicator.textContent = 'All changes saved';
-                    indicator.classList.remove('pds-has-changes');
+            const saveBtn = this.wrapper.querySelector('.pds-save-btn');
+            const saveIcon = this.wrapper.querySelector('.pds-save-icon');
+            const saveText = this.wrapper.querySelector('.pds-save-text');
+            const saveCount = this.wrapper.querySelector('.pds-save-count');
+
+            if (!saveBtn) return;
+
+            // Remove all state classes
+            saveBtn.classList.remove('pds-save-btn-saved', 'pds-save-btn-pending', 'pds-save-btn-saving', 'pds-save-btn-error');
+
+            if (count > 0) {
+                // Has changes - show prominent save button
+                saveBtn.classList.add('pds-save-btn-pending');
+                saveBtn.disabled = false;
+
+                if (saveIcon) {
+                    saveIcon.innerHTML = '<span class="dashicons dashicons-cloud-upload"></span>';
+                }
+                if (saveText) {
+                    saveText.textContent = 'Save';
+                }
+                if (saveCount) {
+                    saveCount.textContent = count;
+                }
+            } else {
+                // No changes - show saved state
+                saveBtn.classList.add('pds-save-btn-saved');
+                saveBtn.disabled = true;
+
+                if (saveIcon) {
+                    saveIcon.innerHTML = '<span class="dashicons dashicons-yes-alt"></span>';
+                }
+                if (saveText) {
+                    saveText.textContent = 'Saved';
+                }
+                if (saveCount) {
+                    saveCount.textContent = '';
                 }
             }
-            
-            if (saveBtn) {
-                saveBtn.disabled = count === 0;
-            }
-            
-            if (discardBtn) {
-                discardBtn.style.display = count > 0 ? '' : 'none';
-            }
         }
-        
+
         /**
          * Update save button state (during save)
          */
         updateSaveButtonState() {
-            const saveBtn = this.wrapper.querySelector('.pds-save-changes-btn');
-            
-            if (saveBtn) {
-                if (this.isSaving) {
-                    saveBtn.disabled = true;
-                    saveBtn.innerHTML = '<span class="dashicons dashicons-update pds-spin"></span> Saving...';
-                } else {
-                    const count = Object.keys(this.pendingChanges).length;
-                    saveBtn.disabled = count === 0;
-                    saveBtn.innerHTML = '<span class="dashicons dashicons-saved"></span> Save';
+            const saveBtn = this.wrapper.querySelector('.pds-save-btn');
+            const saveIcon = this.wrapper.querySelector('.pds-save-icon');
+            const saveText = this.wrapper.querySelector('.pds-save-text');
+            const saveCount = this.wrapper.querySelector('.pds-save-count');
+
+            if (!saveBtn) return;
+
+            // Remove all state classes
+            saveBtn.classList.remove('pds-save-btn-saved', 'pds-save-btn-pending', 'pds-save-btn-saving', 'pds-save-btn-error');
+
+            if (this.isSaving) {
+                // Saving state
+                saveBtn.classList.add('pds-save-btn-saving');
+                saveBtn.disabled = true;
+
+                if (saveIcon) {
+                    saveIcon.innerHTML = '<span class="dashicons dashicons-update"></span>';
                 }
+                if (saveText) {
+                    saveText.textContent = 'Saving...';
+                }
+                if (saveCount) {
+                    saveCount.textContent = '';
+                }
+            } else {
+                // Not saving - update based on pending changes
+                this.updatePendingChangesUI();
             }
         }
         
@@ -1922,11 +1956,11 @@
          */
         initBatchSave() {
             const settings = this.config.settings || {};
-            
+
             if (settings.save_mode !== 'batch' || !this.config.canEdit) {
                 return;
             }
-            
+
             // Set up beforeunload handler
             window.addEventListener('beforeunload', (e) => {
                 if (this.hasUnsavedChanges()) {
@@ -1935,23 +1969,36 @@
                     return e.returnValue;
                 }
             });
-            
-            // Set up save button handler
-            const saveBtn = this.wrapper.querySelector('.pds-save-changes-btn');
+
+            // Set up main save button click (saves immediately)
+            const saveBtn = this.wrapper.querySelector('.pds-save-btn');
             if (saveBtn) {
-                saveBtn.addEventListener('click', () => {
+                saveBtn.addEventListener('click', (e) => {
+                    // Only save if there are pending changes
+                    if (Object.keys(this.pendingChanges).length > 0) {
+                        this.saveAllChanges();
+                    }
+                });
+            }
+
+            // Set up "Save all" dropdown item
+            const saveAllBtn = this.wrapper.querySelector('.pds-save-all-btn');
+            if (saveAllBtn) {
+                saveAllBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
                     this.saveAllChanges();
                 });
             }
-            
-            // Set up discard button handler
-            const discardBtn = this.wrapper.querySelector('.pds-discard-changes-btn');
-            if (discardBtn) {
-                discardBtn.addEventListener('click', () => {
+
+            // Set up "Discard all" dropdown item
+            const discardAllBtn = this.wrapper.querySelector('.pds-discard-all-btn');
+            if (discardAllBtn) {
+                discardAllBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
                     this.discardAllChanges();
                 });
             }
-            
+
             // Initialize UI state
             this.updatePendingChangesUI();
         }

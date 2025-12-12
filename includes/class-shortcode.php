@@ -98,36 +98,61 @@ class PDS_Post_Tables_Shortcode {
         <div class="<?php echo implode(' ', $classes); ?>" id="<?php echo esc_attr($instance_id); ?>-wrap">
             <?php if ($can_edit) : ?>
             <div class="pds-table-toolbar">
-                <div class="pds-toolbar-group pds-toolbar-selection">
-                    <span class="pds-toolbar-label"><?php _e('Selection:', 'pds-post-tables'); ?></span>
-                    <span class="pds-selection-info"><?php _e('None', 'pds-post-tables'); ?></span>
-                    <span class="pds-toolbar-help" title="<?php _e('Click cell to select. Click row # to select row. Click column header to select column. Double-click cell to edit. Click outside to deselect.', 'pds-post-tables'); ?>">?</span>
+                <?php if (($config['settings']['save_mode'] ?? 'immediate') === 'batch') : ?>
+                <div class="pds-toolbar-group pds-toolbar-save">
+                    <div class="pds-save-button-container">
+                        <button type="button" class="pds-save-btn pds-save-btn-saved" disabled>
+                            <span class="pds-save-icon">
+                                <span class="dashicons dashicons-yes-alt"></span>
+                            </span>
+                            <span class="pds-save-text"><?php _e('Saved', 'pds-post-tables'); ?></span>
+                            <span class="pds-save-count"></span>
+                            <span class="pds-save-arrow">▾</span>
+                        </button>
+                        <div class="pds-save-dropdown">
+                            <button type="button" class="pds-save-dropdown-item pds-save-all-btn">
+                                <span class="dashicons dashicons-saved"></span>
+                                <?php _e('Save all changes', 'pds-post-tables'); ?>
+                            </button>
+                            <button type="button" class="pds-save-dropdown-item pds-discard-all-btn">
+                                <span class="dashicons dashicons-undo"></span>
+                                <?php _e('Discard all changes', 'pds-post-tables'); ?>
+                            </button>
+                        </div>
+                    </div>
                 </div>
-                
                 <div class="pds-toolbar-separator"></div>
-                
+                <?php endif; ?>
+
+                <div class="pds-toolbar-group pds-toolbar-selection">
+                    <span class="pds-selection-info"><?php _e('None', 'pds-post-tables'); ?></span>
+                    <span class="pds-toolbar-help" title="<?php _e('Click cell to select. Click row # to select row. Click column header to select column. Double-click cell to edit.', 'pds-post-tables'); ?>">?</span>
+                </div>
+
+                <div class="pds-toolbar-separator"></div>
+
                 <div class="pds-toolbar-group pds-toolbar-formatting">
                     <label class="pds-toolbar-item" title="<?php _e('Background Color', 'pds-post-tables'); ?>">
                         <span class="dashicons dashicons-art"></span>
                         <input type="color" class="pds-format-bg-color" value="#ffffff">
                     </label>
-                    
+
                     <label class="pds-toolbar-item" title="<?php _e('Text Color', 'pds-post-tables'); ?>">
                         <span class="dashicons dashicons-editor-textcolor"></span>
                         <input type="color" class="pds-format-text-color" value="#333333">
                     </label>
-                    
+
                     <button type="button" class="pds-toolbar-btn pds-format-bold" title="<?php _e('Bold', 'pds-post-tables'); ?>">
                         <span class="dashicons dashicons-editor-bold"></span>
                     </button>
-                    
+
                     <button type="button" class="pds-toolbar-btn pds-format-clear" title="<?php _e('Clear Formatting', 'pds-post-tables'); ?>">
                         <span class="dashicons dashicons-editor-removeformatting"></span>
                     </button>
                 </div>
-                
+
                 <div class="pds-toolbar-separator"></div>
-                
+
                 <div class="pds-toolbar-group pds-toolbar-actions">
                     <?php if ($config['settings']['allow_column_toggle'] ?? true) : ?>
                     <div class="pds-column-toggle-container">
@@ -145,24 +170,11 @@ class PDS_Post_Tables_Shortcode {
                         </div>
                     </div>
                     <?php endif; ?>
-                    
+
                     <?php if ($config['settings']['export_csv'] ?? false) : ?>
                     <button type="button" class="pds-toolbar-btn pds-export-csv" data-instance="<?php echo esc_attr($instance_id); ?>">
-                        <?php _e('Export CSV', 'pds-post-tables'); ?>
+                        <span class="dashicons dashicons-download"></span> <?php _e('Export', 'pds-post-tables'); ?>
                     </button>
-                    <?php endif; ?>
-                    
-                    <?php if (($config['settings']['save_mode'] ?? 'immediate') === 'batch') : ?>
-                    <div class="pds-toolbar-separator"></div>
-                    <div class="pds-toolbar-group pds-batch-save-controls">
-                        <span class="pds-pending-changes-indicator"><?php _e('All changes saved', 'pds-post-tables'); ?></span>
-                        <button type="button" class="pds-toolbar-btn pds-discard-changes-btn" style="display:none;" title="<?php _e('Discard all unsaved changes', 'pds-post-tables'); ?>">
-                            <span class="dashicons dashicons-undo"></span> <?php _e('Discard', 'pds-post-tables'); ?>
-                        </button>
-                        <button type="button" class="pds-toolbar-btn pds-save-changes-btn pds-btn-primary" disabled title="<?php _e('Save all changes', 'pds-post-tables'); ?>">
-                            <span class="dashicons dashicons-saved"></span> <?php _e('Save', 'pds-post-tables'); ?>
-                        </button>
-                    </div>
                     <?php endif; ?>
                 </div>
 
