@@ -229,15 +229,12 @@
                 return;
             }
 
-            // Get column index to look up our custom config
-            // Subtract 1 to account for row number column at index 0
-            const columns = this.table.getColumns();
-            const columnIndex = columns.findIndex(c => c === cell.getColumn());
-            // Adjust for row number column (first column)
-            const configIndex = columnIndex > 0 ? columnIndex - 1 : 0;
+            // Get colId from cell's data attribute (set during formatting)
+            const cellEl = cell.getElement();
+            const colId = cellEl.dataset.colId;
 
             // Check our custom config map for this column
-            const colConfig = this.columnConfigMap?.[configIndex];
+            const colConfig = this.columnConfigMap?.[colId];
             if (!colConfig || !colConfig.editable) {
                 return;
             }
@@ -798,9 +795,6 @@
             // Store column config for reference (our custom props here, NOT in Tabulator column def)
             this.columnConfigMap = {};
             
-            // Track column index to handle duplicate field names
-            let columnIndex = 0;
-
             this.config.columns.forEach(col => {
                 const fieldName = col.field;
                 const fieldType = col.fieldType || 'text';
@@ -836,9 +830,8 @@
                 }
 
                 // Store our custom config for reference
-                // Key by column index since field names can be duplicated across sources
-                // We'll look up by index from the cell's column position
-                this.columnConfigMap[columnIndex] = {
+                // Key by colId which is unique per column
+                this.columnConfigMap[colId] = {
                     fieldType: fieldType,
                     fieldName: fieldName,
                     source: col.source || 'auto',
@@ -849,8 +842,6 @@
                     editable: col.editable && this.config.canEdit,
                     editorType: editorType,
                 };
-
-                columnIndex++;
                 
                 // Build Tabulator column definition (only Tabulator-recognized options)
                 // NOTE: We do NOT set editor here - we handle editing manually via double-click
@@ -1082,7 +1073,10 @@
             const fieldType = colConfig.fieldType;
             const rowData = cell.getRow().getData();
             const cellEl = cell.getElement();
-            
+
+            // Store colId on cell element for later lookup (e.g., in handleCellDblClick)
+            cellEl.dataset.colId = colId;
+
             // Get column defaults
             const defaults = this.config.columnDefaults[colId] || {};
             
@@ -1511,11 +1505,9 @@
          * Save a single cell immediately
          */
         saveCell(postId, fieldKey, value, cell) {
-            // Get column index for config lookup
-            const columns = this.table.getColumns();
-            const columnIndex = columns.findIndex(c => c === cell.getColumn());
-            const configIndex = columnIndex > 0 ? columnIndex - 1 : 0;
-            const colConfig = this.columnConfigMap?.[configIndex] || {};
+            // Get colId from cell's data attribute for config lookup
+            const colId = cell.getElement().dataset.colId;
+            const colConfig = this.columnConfigMap?.[colId] || {};
             const source = colConfig.source || 'auto';
             
             cell.getElement().classList.add('pds-saving');
@@ -1580,14 +1572,12 @@
             
             // Save changes sequentially to avoid overwhelming the server
             for (const change of changes) {
-                // Get column index for config lookup
-                let configIndex = 0;
+                // Get colId from cell's data attribute for config lookup
+                let colId = null;
                 if (change.cell) {
-                    const columns = this.table.getColumns();
-                    const columnIndex = columns.findIndex(c => c === change.cell.getColumn());
-                    configIndex = columnIndex > 0 ? columnIndex - 1 : 0;
+                    colId = change.cell.getElement().dataset.colId;
                 }
-                const colConfig = this.columnConfigMap?.[configIndex] || {};
+                const colConfig = this.columnConfigMap?.[colId] || {};
                 const source = colConfig.source || 'auto';
                 
                 try {
