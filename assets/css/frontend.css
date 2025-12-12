@@ -1,0 +1,1089 @@
+/**
+ * PDS Post Tables - Frontend Styles
+ */
+
+/* Wrapper */
+.pds-post-table-wrap {
+    margin: 20px 0;
+}
+
+/* Toolbar */
+.pds-table-toolbar {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 15px;
+    margin-bottom: 10px;
+    background: #f8f9fa;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    flex-wrap: wrap;
+}
+
+.pds-toolbar-group {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.pds-toolbar-separator {
+    width: 1px;
+    height: 24px;
+    background: #ddd;
+    margin: 0 5px;
+}
+
+.pds-toolbar-label {
+    font-size: 12px;
+    color: #666;
+    font-weight: 500;
+}
+
+.pds-selection-info {
+    font-size: 13px;
+    color: #333;
+    min-width: 120px;
+}
+
+.pds-toolbar-help {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 18px;
+    height: 18px;
+    font-size: 11px;
+    font-weight: bold;
+    color: #666;
+    background: #e0e0e0;
+    border-radius: 50%;
+    cursor: help;
+    margin-left: 4px;
+}
+
+.pds-toolbar-item {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    cursor: pointer;
+}
+
+.pds-toolbar-item .dashicons,
+.pds-toolbar-btn .dashicons {
+    font-size: 18px;
+    width: 18px;
+    height: 18px;
+    line-height: 1;
+}
+
+.pds-toolbar-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    font-size: 14px;
+}
+
+.pds-toolbar-item input[type="color"] {
+    width: 28px;
+    height: 28px;
+    padding: 0;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    cursor: pointer;
+    background: none;
+}
+
+.pds-toolbar-item input[type="color"]::-webkit-color-swatch-wrapper {
+    padding: 2px;
+}
+
+.pds-toolbar-item input[type="color"]::-webkit-color-swatch {
+    border-radius: 2px;
+    border: none;
+}
+
+.pds-toolbar-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 32px;
+    height: 32px;
+    padding: 4px 8px;
+    font-size: 13px;
+    line-height: 1;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    background: #fff;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.pds-toolbar-btn:hover {
+    background: #e9ecef;
+    border-color: #999;
+}
+
+.pds-toolbar-btn.active {
+    background: #0073aa;
+    border-color: #0073aa;
+    color: #fff;
+}
+
+.pds-format-bold {
+    font-size: 14px;
+}
+
+.pds-format-clear {
+    color: #dc3545;
+}
+
+.pds-toolbar-actions {
+    margin-left: auto;
+}
+
+/* Row number column */
+.pds-row-number {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
+    cursor: pointer;
+    color: #666;
+    font-size: 12px;
+    font-weight: 500;
+    transition: color 0.2s, background-color 0.2s;
+}
+
+.pds-row-number:hover {
+    color: #0073aa;
+    background-color: rgba(0, 115, 170, 0.1);
+}
+
+.pds-row-number-cell {
+    cursor: pointer !important;
+    background-color: #f8f9fa !important;
+    border-right: 1px solid #ddd !important;
+}
+
+.pds-row-number-cell:hover {
+    background-color: rgba(0, 115, 170, 0.1) !important;
+}
+
+/* Selection styles */
+.pds-selected {
+    outline: 2px solid #0073aa !important;
+    outline-offset: -2px;
+    background-color: rgba(0, 115, 170, 0.1) !important;
+}
+
+.pds-selected-row {
+    outline: 2px solid #28a745 !important;
+    outline-offset: -2px;
+}
+
+.pds-selected-row > * {
+    background-color: rgba(40, 167, 69, 0.1) !important;
+}
+
+.pds-selected-column {
+    background-color: rgba(255, 193, 7, 0.3) !important;
+}
+
+.pds-selected-column-cell {
+    background-color: rgba(255, 193, 7, 0.1) !important;
+}
+
+/* Column header clickable for selection */
+.tabulator-col {
+    cursor: pointer;
+}
+
+.tabulator-col:hover {
+    background-color: #e9ecef !important;
+}
+
+/* Sort arrow styling - make it more visible */
+.tabulator-col .tabulator-col-sorter {
+    cursor: pointer;
+    padding: 0 4px;
+}
+
+.tabulator-col .tabulator-col-sorter:hover {
+    background-color: rgba(0, 115, 170, 0.2);
+    border-radius: 3px;
+}
+
+/* Inline editor */
+.pds-inline-editor {
+    font-family: inherit;
+    font-size: inherit;
+}
+
+.pds-inline-editor:focus {
+    outline: none;
+}
+
+/* Date and datetime inputs */
+.pds-inline-editor[type="date"],
+.pds-inline-editor[type="datetime-local"] {
+    min-width: 140px;
+    cursor: pointer;
+}
+
+.pds-inline-editor[type="datetime-local"] {
+    min-width: 200px;
+}
+
+/* Table container */
+.pds-post-table {
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    overflow-x: auto; /* Allow horizontal scrolling when columns exceed container width */
+    overflow-y: hidden;
+}
+
+/* Footer */
+.pds-table-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 15px;
+    background: #f9f9f9;
+    border-top: 1px solid #ddd;
+    font-size: 13px;
+    color: #666;
+}
+
+.pds-table-info {
+    
+}
+
+/* Row height variants */
+.pds-row-height-compact .tabulator-row {
+    min-height: 30px;
+}
+
+.pds-row-height-compact .tabulator-cell {
+    padding: 4px 8px;
+}
+
+.pds-row-height-normal .tabulator-row {
+    min-height: 40px;
+}
+
+.pds-row-height-normal .tabulator-cell {
+    padding: 8px 12px;
+}
+
+.pds-row-height-comfortable .tabulator-row {
+    min-height: 50px;
+}
+
+.pds-row-height-comfortable .tabulator-cell {
+    padding: 12px 15px;
+}
+
+/* Cell formatting */
+.pds-post-table .tabulator-cell span {
+    display: inline-block;
+    padding: 2px 6px;
+    border-radius: 3px;
+}
+
+/* Boolean styling */
+.pds-bool-true {
+    color: #00a32a;
+    font-weight: bold;
+}
+
+.pds-bool-false {
+    color: #d63638;
+}
+
+/* Saving indicator */
+.pds-saving {
+    position: relative;
+}
+
+.pds-saving::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    right: 8px;
+    width: 14px;
+    height: 14px;
+    margin-top: -7px;
+    border: 2px solid #ddd;
+    border-top-color: #2271b1;
+    border-radius: 50%;
+    animation: pds-spin 0.8s linear infinite;
+}
+
+/* Cell loading placeholder */
+.pds-cell-loading {
+    color: #999;
+    font-style: italic;
+}
+
+@keyframes pds-spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* Saved indicator */
+.pds-saved {
+    animation: pds-flash-green 1s;
+}
+
+@keyframes pds-flash-green {
+    0% {
+        background-color: #d1e7dd;
+    }
+    100% {
+        background-color: transparent;
+    }
+}
+
+/* Error message */
+.pds-table-error {
+    padding: 20px;
+    background: #fcf0f1;
+    border: 1px solid #d63638;
+    border-radius: 4px;
+    color: #d63638;
+    text-align: center;
+}
+
+/* Access denied message */
+.pds-table-access-denied {
+    padding: 30px;
+    background: #fff8e5;
+    border: 1px solid #dba617;
+    border-radius: 4px;
+    color: #6b5100;
+    text-align: center;
+}
+
+/* Table selector styles */
+.pds-table-selector-login,
+.pds-table-selector-empty {
+    padding: 30px;
+    background: #f9f9f9;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    color: #666;
+    text-align: center;
+}
+
+.pds-table-title {
+    margin-bottom: 15px;
+}
+
+.pds-table-title h3 {
+    margin: 0;
+    font-size: 18px;
+    color: #1d2327;
+}
+
+/* Tabulator overrides */
+.pds-post-table .tabulator {
+    border: none;
+    font-size: 14px;
+}
+
+.pds-post-table .tabulator-header {
+    background: #f5f5f5;
+    border-bottom: 2px solid #ddd;
+}
+
+.pds-post-table .tabulator-header .tabulator-col {
+    background: transparent;
+    border-right: 1px solid #ddd;
+}
+
+.pds-post-table .tabulator-header .tabulator-col:last-child {
+    border-right: none;
+}
+
+.pds-post-table .tabulator-header .tabulator-col-content {
+    padding: 10px 12px;
+}
+
+.pds-post-table .tabulator-header .tabulator-col-title {
+    font-weight: 600;
+    color: #1d2327;
+    white-space: normal !important;
+    word-wrap: break-word !important;
+    overflow-wrap: break-word !important;
+    line-height: 1.3;
+}
+
+/* Ensure header columns allow wrapping */
+.pds-post-table .tabulator-header .tabulator-col {
+    white-space: normal !important;
+}
+
+.pds-post-table .tabulator-header .tabulator-col-content {
+    white-space: normal !important;
+}
+
+.pds-post-table .tabulator-row {
+    border-bottom: 1px solid #eee;
+}
+
+.pds-post-table .tabulator-row:hover {
+    background: #f9f9f9;
+}
+
+.pds-post-table .tabulator-row.tabulator-row-even {
+    background: #fafafa;
+}
+
+.pds-post-table .tabulator-row.tabulator-row-even:hover {
+    background: #f5f5f5;
+}
+
+.pds-post-table .tabulator-cell {
+    border-right: 1px solid #eee;
+}
+
+.pds-post-table .tabulator-cell:last-child {
+    border-right: none;
+}
+
+/* Editable cells */
+.pds-post-table .tabulator-cell.tabulator-editable {
+    cursor: pointer;
+}
+
+.pds-post-table .tabulator-cell.tabulator-editable:hover {
+    background: #e8f4fc;
+}
+
+/* Editing state */
+.pds-post-table .tabulator-cell.tabulator-editing {
+    background: #fff;
+    box-shadow: inset 0 0 0 2px #2271b1;
+}
+
+.pds-post-table .tabulator-cell.tabulator-editing input,
+.pds-post-table .tabulator-cell.tabulator-editing select {
+    border: none;
+    outline: none;
+    background: transparent;
+    width: 100%;
+    padding: 0;
+    font-size: inherit;
+}
+
+/* Header filters */
+.pds-post-table .tabulator-header-filter {
+    padding: 5px;
+}
+
+.pds-post-table .tabulator-header-filter input,
+.pds-post-table .tabulator-header-filter select {
+    width: 100%;
+    padding: 4px 8px;
+    border: 1px solid #ddd;
+    border-radius: 3px;
+    font-size: 12px;
+}
+
+.pds-post-table .tabulator-header-filter input:focus,
+.pds-post-table .tabulator-header-filter select:focus {
+    border-color: #2271b1;
+    outline: none;
+    box-shadow: 0 0 0 1px #2271b1;
+}
+
+/* Pagination */
+.pds-post-table .tabulator-footer {
+    background: #f9f9f9;
+    border-top: 1px solid #ddd;
+    padding: 10px;
+}
+
+.pds-post-table .tabulator-paginator {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 5px;
+}
+
+.pds-post-table .tabulator-page {
+    padding: 5px 10px;
+    border: 1px solid #ddd;
+    border-radius: 3px;
+    background: #fff;
+    cursor: pointer;
+    font-size: 13px;
+}
+
+.pds-post-table .tabulator-page:hover {
+    background: #f5f5f5;
+}
+
+.pds-post-table .tabulator-page.active {
+    background: #2271b1;
+    border-color: #2271b1;
+    color: #fff;
+}
+
+.pds-post-table .tabulator-page:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* Page size selector */
+.pds-post-table .tabulator-page-size {
+    padding: 5px 8px;
+    border: 1px solid #ddd;
+    border-radius: 3px;
+    font-size: 13px;
+    margin-right: 10px;
+}
+
+/* Placeholder */
+.pds-post-table .tabulator-placeholder {
+    padding: 30px;
+    text-align: center;
+    color: #666;
+    font-style: italic;
+}
+
+/* Loading animation */
+.pds-post-table .tabulator-placeholder[data-loading="true"]::before {
+    content: '';
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    border: 2px solid #ddd;
+    border-top-color: #0073aa;
+    border-radius: 50%;
+    margin-right: 10px;
+    animation: pds-spin 0.8s linear infinite;
+    vertical-align: middle;
+}
+
+@keyframes pds-spin {
+    to { transform: rotate(360deg); }
+}
+
+/* Progressive loading indicator */
+.pds-post-table .tabulator-loader {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 15px;
+    background: rgba(255,255,255,0.9);
+}
+
+.pds-post-table .tabulator-loader-msg {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: #666;
+}
+
+.pds-post-table .tabulator-loader-msg::before {
+    content: '';
+    width: 16px;
+    height: 16px;
+    border: 2px solid #ddd;
+    border-top-color: #0073aa;
+    border-radius: 50%;
+    animation: pds-spin 0.8s linear infinite;
+}
+
+/* Responsive */
+@media screen and (max-width: 782px) {
+    .pds-table-toolbar {
+        flex-wrap: wrap;
+    }
+    
+    .pds-table-footer {
+        flex-direction: column;
+        gap: 10px;
+    }
+    
+    .pds-post-table .tabulator-paginator {
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+}
+
+/* Truncated text indicator */
+.pds-truncated {
+    position: relative;
+}
+
+.pds-truncated-indicator {
+    color: #0073aa;
+    font-size: 11px;
+    margin-left: 4px;
+    cursor: pointer;
+}
+
+.pds-truncated-indicator:hover {
+    text-decoration: underline;
+}
+
+/* Content modal */
+.pds-content-modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.6);
+    z-index: 100000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+}
+
+.pds-content-modal {
+    background: #fff;
+    border-radius: 8px;
+    max-width: 800px;
+    width: 100%;
+    max-height: 90vh;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+}
+
+.pds-content-modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 20px;
+    border-bottom: 1px solid #ddd;
+    background: #f9f9f9;
+    border-radius: 8px 8px 0 0;
+}
+
+.pds-content-modal-header h3 {
+    margin: 0;
+    font-size: 16px;
+    color: #1d2327;
+}
+
+.pds-content-modal-close {
+    background: none;
+    border: none;
+    font-size: 24px;
+    cursor: pointer;
+    color: #666;
+    padding: 0;
+    line-height: 1;
+}
+
+.pds-content-modal-close:hover {
+    color: #d63638;
+}
+
+.pds-content-modal-body {
+    padding: 20px;
+    overflow-y: auto;
+    flex: 1;
+}
+
+.pds-content-modal-body.pds-view-mode {
+    line-height: 1.6;
+}
+
+.pds-content-modal-body.pds-view-mode p {
+    margin: 0 0 1em;
+}
+
+.pds-content-modal-body.pds-view-mode ul,
+.pds-content-modal-body.pds-view-mode ol {
+    margin: 0 0 1em 1.5em;
+}
+
+.pds-content-modal-editor {
+    width: 100%;
+    min-height: 300px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    padding: 15px;
+    font-family: inherit;
+    font-size: 14px;
+    line-height: 1.6;
+    resize: vertical;
+}
+
+.pds-content-modal-wysiwyg {
+    width: 100%;
+    min-height: 300px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    padding: 15px;
+    overflow-y: auto;
+    line-height: 1.6;
+}
+
+.pds-content-modal-wysiwyg:focus {
+    outline: none;
+    border-color: #0073aa;
+    box-shadow: 0 0 0 1px #0073aa;
+}
+
+.pds-content-modal-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    padding: 15px 20px;
+    border-top: 1px solid #ddd;
+    background: #f9f9f9;
+    border-radius: 0 0 8px 8px;
+}
+
+.pds-content-modal-footer button {
+    padding: 8px 16px;
+    border-radius: 4px;
+    font-size: 14px;
+    cursor: pointer;
+}
+
+.pds-content-modal-footer .pds-btn-secondary {
+    background: #fff;
+    border: 1px solid #ddd;
+    color: #1d2327;
+}
+
+.pds-content-modal-footer .pds-btn-secondary:hover {
+    background: #f0f0f0;
+}
+
+.pds-content-modal-footer .pds-btn-primary {
+    background: #0073aa;
+    border: 1px solid #0073aa;
+    color: #fff;
+}
+
+.pds-content-modal-footer .pds-btn-primary:hover {
+    background: #005a87;
+}
+
+.pds-content-modal-footer .pds-btn-edit {
+    background: #2271b1;
+    border: 1px solid #2271b1;
+    color: #fff;
+}
+
+.pds-content-modal-footer .pds-btn-edit:hover {
+    background: #135e96;
+}
+
+/* WYSIWYG content in cells */
+.pds-wysiwyg-cell {
+    display: block;
+    line-height: 1.4;
+}
+
+.pds-wysiwyg-rendered {
+    /* Constrain HTML content in cells */
+}
+
+.pds-wysiwyg-rendered img {
+    max-width: 100px;
+    max-height: 60px;
+    object-fit: contain;
+}
+
+.pds-wysiwyg-rendered p {
+    margin: 0 0 0.3em;
+}
+
+.pds-wysiwyg-rendered p:last-child {
+    margin-bottom: 0;
+}
+
+.pds-wysiwyg-rendered ul,
+.pds-wysiwyg-rendered ol {
+    margin: 0 0 0.3em 1em;
+    padding: 0;
+}
+
+.pds-wysiwyg-rendered li {
+    margin: 0;
+}
+
+.pds-wysiwyg-rendered a {
+    color: #0073aa;
+}
+
+.pds-wysiwyg-rendered h1,
+.pds-wysiwyg-rendered h2,
+.pds-wysiwyg-rendered h3,
+.pds-wysiwyg-rendered h4,
+.pds-wysiwyg-rendered h5,
+.pds-wysiwyg-rendered h6 {
+    font-size: inherit;
+    margin: 0 0 0.2em;
+}
+
+.pds-wysiwyg-rendered table {
+    font-size: 11px;
+}
+
+.pds-wysiwyg-rendered blockquote {
+    margin: 0.3em 0 0.3em 1em;
+    padding-left: 0.5em;
+    border-left: 2px solid #ddd;
+}
+
+/* Column Toggle Dropdown */
+.pds-column-toggle-container {
+    position: relative;
+    display: inline-block;
+}
+
+.pds-column-toggle-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.pds-column-toggle-btn .dashicons {
+    font-size: 16px;
+    width: 16px;
+    height: 16px;
+}
+
+.pds-column-toggle-dropdown {
+    display: none;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    z-index: 1000;
+    min-width: 220px;
+    max-height: 400px;
+    background: #fff;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    margin-top: 4px;
+}
+
+.pds-column-toggle-dropdown.pds-dropdown-open {
+    display: block;
+}
+
+.pds-column-toggle-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 12px;
+    border-bottom: 1px solid #eee;
+    background: #f8f9fa;
+}
+
+.pds-column-toggle-header strong {
+    font-size: 12px;
+    color: #333;
+}
+
+.pds-column-reset-btn {
+    padding: 3px 8px;
+    font-size: 11px;
+    background: #f0f0f0;
+    border: 1px solid #ddd;
+    border-radius: 3px;
+    cursor: pointer;
+    color: #666;
+}
+
+.pds-column-reset-btn:hover {
+    background: #e0e0e0;
+    color: #333;
+}
+
+.pds-column-toggle-list {
+    padding: 8px 0;
+    max-height: 300px;
+    overflow-y: auto;
+}
+
+.pds-column-toggle-item {
+    display: flex;
+    align-items: center;
+    padding: 6px 12px;
+    cursor: pointer;
+    font-size: 13px;
+    color: #333;
+    transition: background 0.15s;
+}
+
+.pds-column-toggle-item:hover {
+    background: #f5f5f5;
+}
+
+.pds-column-toggle-item input[type="checkbox"] {
+    margin-right: 8px;
+    cursor: pointer;
+}
+
+/* Row Grouping Styles */
+.tabulator .tabulator-row.tabulator-group {
+    background: #f0f4f8 !important;
+    border-bottom: 2px solid #0073aa !important;
+    min-height: 32px;
+}
+
+.tabulator .tabulator-row.tabulator-group:hover {
+    background: #e5edf5 !important;
+    cursor: pointer;
+}
+
+.tabulator .tabulator-row.tabulator-group .tabulator-group-toggle {
+    margin-right: 8px;
+}
+
+.pds-group-title {
+    font-weight: 600;
+    color: #1e3a5f;
+    font-size: 13px;
+}
+
+.pds-group-count {
+    margin-left: 10px;
+    font-weight: normal;
+    color: #666;
+    font-size: 12px;
+}
+
+/* Group collapse arrow */
+.tabulator .tabulator-row.tabulator-group .tabulator-arrow {
+    border-left: 6px solid transparent;
+    border-right: 6px solid transparent;
+    border-top: 6px solid #666;
+    width: 0;
+    height: 0;
+    margin-right: 10px;
+    transition: transform 0.2s;
+}
+
+.tabulator .tabulator-row.tabulator-group.tabulator-group-visible .tabulator-arrow {
+    transform: rotate(0deg);
+}
+
+.tabulator .tabulator-row.tabulator-group:not(.tabulator-group-visible) .tabulator-arrow {
+    transform: rotate(-90deg);
+}
+
+/* Simple toolbar (for non-editors) */
+.pds-toolbar-simple {
+    justify-content: flex-end;
+}
+
+.pds-toolbar-simple .pds-column-toggle-container {
+    margin-right: auto;
+}
+
+/* Persistence indicator - when user has custom settings */
+.pds-has-custom-settings::after {
+    content: '(customized)';
+    font-size: 10px;
+    color: #666;
+    margin-left: 5px;
+}
+
+/* Batch Save Mode Styles */
+
+/* Modified cell indicator */
+.tabulator .tabulator-cell.pds-cell-modified {
+    background-color: #fff8e1 !important;
+    border-left: 3px solid #ffc107 !important;
+}
+
+.tabulator .tabulator-cell.pds-cell-modified::after {
+    content: '';
+    position: absolute;
+    top: 2px;
+    right: 2px;
+    width: 6px;
+    height: 6px;
+    background: #ffc107;
+    border-radius: 50%;
+}
+
+/* Batch save controls */
+.pds-batch-save-controls {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+/* Pending changes indicator */
+.pds-pending-changes-indicator {
+    font-size: 12px;
+    color: #666;
+    padding: 4px 10px;
+    background: #f0f0f0;
+    border-radius: 4px;
+}
+
+.pds-pending-changes-indicator.pds-has-changes {
+    color: #856404;
+    background: #fff3cd;
+    border: 1px solid #ffc107;
+    font-weight: 500;
+}
+
+/* Save button primary style */
+.pds-btn-primary {
+    background: #0073aa !important;
+    border-color: #0073aa !important;
+    color: #fff !important;
+}
+
+.pds-btn-primary:hover:not(:disabled) {
+    background: #005a87 !important;
+    border-color: #005a87 !important;
+}
+
+.pds-btn-primary:disabled {
+    background: #ccc !important;
+    border-color: #ccc !important;
+    color: #666 !important;
+    cursor: not-allowed;
+}
+
+/* Discard button */
+.pds-discard-changes-btn {
+    color: #dc3545 !important;
+    border-color: #dc3545 !important;
+}
+
+.pds-discard-changes-btn:hover {
+    background: #dc3545 !important;
+    color: #fff !important;
+}
+
+/* Spinning icon animation */
+@keyframes pds-spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+.pds-spin {
+    animation: pds-spin 1s linear infinite;
+}
+
+/* Save/discard buttons with icons */
+.pds-save-changes-btn .dashicons,
+.pds-discard-changes-btn .dashicons {
+    font-size: 16px;
+    width: 16px;
+    height: 16px;
+    vertical-align: middle;
+    margin-right: 3px;
+}
