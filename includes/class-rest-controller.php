@@ -233,17 +233,25 @@ class PDS_Post_Tables_REST_Controller {
         
         // Use source from column config if available
         $source = $column['source'] ?? $source;
-        
+
+        // Get old value for change logging
+        $old_value = $this->data_handler->get_field_value($post_id, $field_key, $source);
+
         // Update the value
         $result = $this->data_handler->update_field_value($post_id, $field_key, $value, $source);
-        
+
         if (is_wp_error($result)) {
             return $result;
         }
-        
+
         // Return the new value
         $new_value = $this->data_handler->get_field_value($post_id, $field_key, $source);
-        
+
+        // Log change for real-time sync
+        if (class_exists('PDS_Post_Tables_Realtime_Sync')) {
+            PDS_Post_Tables_Realtime_Sync::log_change($table_id, $post_id, $field_key, $old_value, $new_value);
+        }
+
         return rest_ensure_response([
             'success' => true,
             'post_id' => $post_id,

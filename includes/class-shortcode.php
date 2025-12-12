@@ -165,6 +165,24 @@ class PDS_Post_Tables_Shortcode {
                     </div>
                     <?php endif; ?>
                 </div>
+
+                <div class="pds-toolbar-spacer"></div>
+
+                <div class="pds-toolbar-group pds-toolbar-sync">
+                    <div class="pds-active-users" title="<?php _e('Users viewing this table', 'pds-post-tables'); ?>">
+                        <span class="dashicons dashicons-groups"></span>
+                        <span class="pds-user-count">1</span>
+                        <div class="pds-user-list-dropdown">
+                            <div class="pds-user-list">
+                                <span class="pds-user-list-empty"><?php _e('Only you are viewing this table', 'pds-post-tables'); ?></span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="pds-sync-status" title="<?php _e('Real-time sync status', 'pds-post-tables'); ?>">
+                        <span class="pds-sync-dot pds-sync-connecting"></span>
+                        <span class="pds-sync-text"><?php _e('Connecting...', 'pds-post-tables'); ?></span>
+                    </div>
+                </div>
             </div>
             <?php else : ?>
             <?php 

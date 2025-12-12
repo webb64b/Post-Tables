@@ -1136,3 +1136,185 @@ body.pds-has-sticky-scrollbar {
 .pds-post-table.pds-using-sticky-scrollbar .tabulator .tabulator-tableholder {
     overflow-x: hidden !important;
 }
+
+/* ==========================================================================
+   Real-time Sync Styles
+   ========================================================================== */
+
+/* Toolbar spacer - pushes sync controls to right */
+.pds-toolbar-spacer {
+    flex: 1;
+}
+
+/* Sync status indicator */
+.pds-toolbar-sync {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.pds-sync-status {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    color: #666;
+    cursor: default;
+}
+
+.pds-sync-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+
+.pds-sync-dot.pds-sync-connecting {
+    background: #f0ad4e;
+    animation: pds-pulse 1.5s infinite;
+}
+
+.pds-sync-dot.pds-sync-connected {
+    background: #5cb85c;
+}
+
+.pds-sync-dot.pds-sync-disconnected {
+    background: #d9534f;
+}
+
+.pds-sync-dot.pds-sync-syncing {
+    background: #5bc0de;
+    animation: pds-pulse 0.8s infinite;
+}
+
+@keyframes pds-pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.4; }
+}
+
+.pds-sync-text {
+    font-weight: 500;
+}
+
+/* Active users indicator */
+.pds-active-users {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 4px 8px;
+    background: #f0f0f0;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 12px;
+    color: #666;
+}
+
+.pds-active-users:hover {
+    background: #e8e8e8;
+}
+
+.pds-active-users .dashicons {
+    font-size: 16px;
+    width: 16px;
+    height: 16px;
+}
+
+.pds-user-count {
+    font-weight: 600;
+    min-width: 14px;
+    text-align: center;
+}
+
+/* User list dropdown */
+.pds-user-list-dropdown {
+    position: absolute;
+    top: 100%;
+    right: 0;
+    margin-top: 4px;
+    background: #fff;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+    min-width: 180px;
+    z-index: 1000;
+    display: none;
+}
+
+.pds-active-users:hover .pds-user-list-dropdown {
+    display: block;
+}
+
+.pds-user-list {
+    padding: 8px;
+}
+
+.pds-user-list-empty {
+    color: #999;
+    font-style: italic;
+    font-size: 12px;
+}
+
+.pds-user-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 4px 0;
+    font-size: 13px;
+}
+
+.pds-user-avatar {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+}
+
+/* Row updated by remote user animation */
+.pds-row-updated-remote {
+    animation: pds-highlight-remote 2s ease-out;
+}
+
+@keyframes pds-highlight-remote {
+    0% { background-color: #d4edda !important; }
+    100% { background-color: transparent; }
+}
+
+/* Toast notifications */
+.pds-toast {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    padding: 12px 20px;
+    background: #333;
+    color: #fff;
+    border-radius: 4px;
+    font-size: 14px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    z-index: 10001;
+    opacity: 0;
+    transform: translateY(20px);
+    transition: opacity 0.3s, transform 0.3s;
+    max-width: 350px;
+}
+
+.pds-toast.pds-toast-visible {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.pds-toast-info {
+    background: #2271b1;
+}
+
+.pds-toast-success {
+    background: #46b450;
+}
+
+.pds-toast-warning {
+    background: #f0ad4e;
+    color: #333;
+}
+
+.pds-toast-error {
+    background: #dc3545;
+}

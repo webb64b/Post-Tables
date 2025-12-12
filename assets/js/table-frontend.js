@@ -211,8 +211,9 @@
                 this.initColumnToggle();
                 this.initBatchSave();
                 this.initStickyScrollbar();
+                this.initRealtimeSync();
             });
-            
+
             // Toolbar (if user can edit)
             if (this.config.canEdit) {
                 this.initToolbar();
@@ -246,7 +247,10 @@
             
             // Clear selection first
             this.clearSelection();
-            
+
+            // Track edit start for conflict detection
+            this.trackEditStart(cell);
+
             const editorType = colConfig.editorType;
             
             // Handle different editor types
@@ -404,24 +408,31 @@
             const saveAndClose = () => {
                 if (saved) return;
                 saved = true;
-                
+
                 const newValue = editor.value;
-                
+
+                // Clear edit tracking
+                self.clearCurrentEdit();
+
                 // Remove editor
                 if (editorContainer.parentNode) {
                     editorContainer.parentNode.removeChild(editorContainer);
                 }
-                
+
                 // Save if changed
                 if (newValue !== currentValue) {
                     // Update cell value (this will trigger cellEdited event)
                     cell.setValue(newValue);
                 }
             };
-            
+
             const cancelEdit = () => {
                 if (saved) return;
                 saved = true;
+
+                // Clear edit tracking
+                self.clearCurrentEdit();
+
                 if (editorContainer.parentNode) {
                     editorContainer.parentNode.removeChild(editorContainer);
                 }
@@ -2497,6 +2508,277 @@
                     console.error('Save error:', error);
                     alert('Failed to save');
                 });
+            }
+        }
+
+        /**
+         * Initialize real-time sync via WordPress Heartbeat API
+         */
+        initRealtimeSync() {
+            // Check if Heartbeat is available
+            if (typeof wp === 'undefined' || typeof wp.heartbeat === 'undefined') {
+                console.log('PDS Tables: Heartbeat API not available, real-time sync disabled');
+                return;
+            }
+
+            // Track last sync time
+            this.lastSyncTimestamp = Math.floor(Date.now() / 1000);
+
+            // Track current edit for conflict detection
+            this.currentEdit = null;
+
+            // Active users viewing this table
+            this.activeUsers = [];
+
+            const self = this;
+
+            // Send our table ID with each heartbeat tick
+            jQuery(document).on('heartbeat-send', function(e, data) {
+                data.pds_table_sync = {
+                    table_id: self.tableId,
+                    last_sync: self.lastSyncTimestamp
+                };
+            });
+
+            // Receive updates from heartbeat
+            jQuery(document).on('heartbeat-tick', function(e, data) {
+                if (data.pds_table_sync && data.pds_table_sync.table_id == self.tableId) {
+                    self.handleRealtimeUpdate(data.pds_table_sync);
+                }
+            });
+
+            // Update sync indicator on each tick
+            jQuery(document).on('heartbeat-tick', function() {
+                self.updateSyncIndicator('synced');
+            });
+
+            // Show error state if heartbeat fails
+            jQuery(document).on('heartbeat-error', function() {
+                self.updateSyncIndicator('error');
+            });
+
+            console.log('PDS Tables: Real-time sync initialized for table', this.tableId);
+        }
+
+        /**
+         * Handle real-time update from heartbeat
+         */
+        handleRealtimeUpdate(syncData) {
+            const { changes, active_users, timestamp } = syncData;
+
+            // Update active users
+            if (active_users) {
+                this.activeUsers = active_users;
+                this.updateActiveUsersIndicator();
+            }
+
+            // Update timestamp
+            if (timestamp) {
+                this.lastSyncTimestamp = timestamp;
+            }
+
+            // No changes to process
+            if (!changes || !changes.rows || changes.rows.length === 0) {
+                return;
+            }
+
+            // Check for conflicts with current edit
+            if (this.currentEdit) {
+                const conflictChange = changes.details.find(d =>
+                    d.post_id == this.currentEdit.postId &&
+                    d.field_key === this.currentEdit.fieldKey
+                );
+
+                if (conflictChange) {
+                    this.handleEditConflict(conflictChange, changes.rows);
+                    return;
+                }
+            }
+
+            // Update rows in Tabulator (won't disturb scroll/sort)
+            this.table.updateData(changes.rows);
+
+            // Flash updated rows briefly
+            changes.rows.forEach(row => {
+                const tabulatorRow = this.table.getRow(row.ID);
+                if (tabulatorRow) {
+                    const el = tabulatorRow.getElement();
+                    el.classList.add('pds-row-updated-remote');
+                    setTimeout(() => {
+                        el.classList.remove('pds-row-updated-remote');
+                    }, 2000);
+                }
+            });
+
+            // Show notification
+            this.showSyncNotification(changes);
+        }
+
+        /**
+         * Handle conflict when someone edits the same cell we're editing
+         */
+        handleEditConflict(conflictChange, rows) {
+            const newRow = rows.find(r => r.ID == conflictChange.post_id);
+            const newValue = newRow ? newRow[conflictChange.field_key] : 'unknown';
+
+            const message = `${conflictChange.user_name} just edited this field.\n\n` +
+                `Their value: "${newValue}"\n` +
+                `Your value: "${this.currentEdit.currentValue}"\n\n` +
+                `Do you want to keep your edit (OK) or accept their change (Cancel)?`;
+
+            if (!confirm(message)) {
+                // Accept their change - cancel current edit and update
+                this.cancelCurrentEdit();
+                this.table.updateData(rows);
+            }
+            // Otherwise keep editing
+        }
+
+        /**
+         * Cancel current edit (close any open editors)
+         */
+        cancelCurrentEdit() {
+            this.currentEdit = null;
+
+            // Close any open inline editors
+            const openEditor = document.querySelector('.pds-inline-editor');
+            if (openEditor) {
+                openEditor.remove();
+            }
+
+            // Close any open multi-select editors
+            const multiEditor = document.querySelector('.pds-user-multi-editor');
+            if (multiEditor) {
+                multiEditor.remove();
+            }
+        }
+
+        /**
+         * Track when user starts editing a cell
+         */
+        trackEditStart(cell) {
+            this.currentEdit = {
+                postId: cell.getRow().getData().ID,
+                fieldKey: cell.getField(),
+                originalValue: cell.getValue(),
+                currentValue: cell.getValue(),
+                startTime: Date.now()
+            };
+        }
+
+        /**
+         * Update current edit value (as user types)
+         */
+        updateCurrentEditValue(value) {
+            if (this.currentEdit) {
+                this.currentEdit.currentValue = value;
+            }
+        }
+
+        /**
+         * Clear current edit tracking
+         */
+        clearCurrentEdit() {
+            this.currentEdit = null;
+        }
+
+        /**
+         * Show sync notification (toast)
+         */
+        showSyncNotification(changes) {
+            const editorNames = [...new Set(changes.details.map(d => d.user_name))].join(', ');
+            const rowCount = changes.rows.length;
+            const message = `${rowCount} row${rowCount > 1 ? 's' : ''} updated by ${editorNames}`;
+
+            this.showToast(message, 'info');
+        }
+
+        /**
+         * Show toast notification
+         */
+        showToast(message, type = 'info') {
+            // Remove existing toast
+            const existing = this.wrapper.querySelector('.pds-toast');
+            if (existing) {
+                existing.remove();
+            }
+
+            const toast = document.createElement('div');
+            toast.className = `pds-toast pds-toast-${type}`;
+            toast.textContent = message;
+
+            this.wrapper.appendChild(toast);
+
+            // Animate in
+            setTimeout(() => toast.classList.add('pds-toast-visible'), 10);
+
+            // Remove after delay
+            setTimeout(() => {
+                toast.classList.remove('pds-toast-visible');
+                setTimeout(() => toast.remove(), 300);
+            }, 4000);
+        }
+
+        /**
+         * Update sync status indicator
+         */
+        updateSyncIndicator(status) {
+            const indicator = this.wrapper.querySelector('.pds-sync-status');
+            if (!indicator) return;
+
+            const dot = indicator.querySelector('.pds-sync-dot');
+            const text = indicator.querySelector('.pds-sync-text');
+
+            if (status === 'synced') {
+                dot.className = 'pds-sync-dot pds-sync-connected';
+                text.textContent = 'Live';
+                indicator.title = 'Real-time sync active';
+            } else if (status === 'error') {
+                dot.className = 'pds-sync-dot pds-sync-disconnected';
+                text.textContent = 'Offline';
+                indicator.title = 'Connection lost - changes may not sync';
+            } else if (status === 'syncing') {
+                dot.className = 'pds-sync-dot pds-sync-syncing';
+                text.textContent = 'Syncing...';
+            }
+        }
+
+        /**
+         * Update active users indicator
+         */
+        updateActiveUsersIndicator() {
+            const container = this.wrapper.querySelector('.pds-active-users');
+            if (!container) return;
+
+            const count = this.activeUsers.length;
+            const countEl = container.querySelector('.pds-user-count');
+            const listEl = container.querySelector('.pds-user-list');
+
+            if (countEl) {
+                // +1 for current user
+                countEl.textContent = count + 1;
+            }
+
+            if (listEl) {
+                if (count === 0) {
+                    listEl.innerHTML = '<span class="pds-user-list-empty">Only you are viewing this table</span>';
+                } else {
+                    const names = this.activeUsers.map(u =>
+                        `<span class="pds-user-item">
+                            <img src="${u.avatar}" alt="${u.name}" class="pds-user-avatar">
+                            ${u.name}
+                        </span>`
+                    ).join('');
+                    listEl.innerHTML = names;
+                }
+            }
+
+            // Update tooltip
+            if (count > 0) {
+                const names = this.activeUsers.map(u => u.name).join(', ');
+                container.title = `Also viewing: ${names}`;
+            } else {
+                container.title = 'You are the only one viewing this table';
             }
         }
     }

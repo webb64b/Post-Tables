@@ -2,7 +2,7 @@
 /**
  * Plugin Name: PDS Post Tables
  * Description: Display and edit WordPress posts in Excel-like tables with customizable columns and conditional formatting
- * Version: 1.0.8
+ * Version: 1.0.9
  * Author: PDS Build
  * Text Domain: pds-post-tables
  * GitHub Plugin URI: https://github.com/webb64b/Post-Tables
@@ -13,7 +13,7 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
-define('PDS_POST_TABLES_VERSION', '1.4.8');
+define('PDS_POST_TABLES_VERSION', '1.4.9');
 define('PDS_POST_TABLES_PATH', plugin_dir_path(__FILE__));
 define('PDS_POST_TABLES_URL', plugin_dir_url(__FILE__));
 
@@ -27,6 +27,7 @@ class PDS_Post_Tables {
     public $admin_ui;
     public $shortcode;
     public $data_handler;
+    public $realtime_sync;
     
     public static function instance() {
         if (is_null(self::$instance)) {
@@ -47,6 +48,7 @@ class PDS_Post_Tables {
         require_once PDS_POST_TABLES_PATH . 'includes/class-rest-controller.php';
         require_once PDS_POST_TABLES_PATH . 'includes/class-admin-ui.php';
         require_once PDS_POST_TABLES_PATH . 'includes/class-shortcode.php';
+        require_once PDS_POST_TABLES_PATH . 'includes/class-realtime-sync.php';
     }
     
     private function init_hooks() {
@@ -65,6 +67,7 @@ class PDS_Post_Tables {
         $this->data_handler = new PDS_Post_Tables_Data_Handler($this->field_scanner);
         $this->admin_ui = new PDS_Post_Tables_Admin_UI($this->field_scanner);
         $this->shortcode = new PDS_Post_Tables_Shortcode($this->data_handler);
+        $this->realtime_sync = new PDS_Post_Tables_Realtime_Sync($this->data_handler);
     }
     
     public function init_rest_api() {
@@ -172,18 +175,23 @@ class PDS_Post_Tables {
             true
         );
         
+        // Enqueue WordPress Heartbeat for real-time sync
+        wp_enqueue_script('heartbeat');
+
         // Frontend JS
         wp_enqueue_script(
             'pds-post-tables-frontend',
             PDS_POST_TABLES_URL . 'assets/js/table-frontend.js',
-            ['tabulator'],
+            ['tabulator', 'jquery', 'heartbeat'],
             PDS_POST_TABLES_VERSION,
             true
         );
-        
+
         wp_localize_script('pds-post-tables-frontend', 'pdsPostTables', [
             'restUrl' => rest_url('pds-tables/v1'),
             'nonce' => wp_create_nonce('wp_rest'),
+            'userId' => get_current_user_id(),
+            'userName' => wp_get_current_user()->display_name,
         ]);
     }
     
@@ -333,11 +341,29 @@ class PDS_Post_Tables {
                     </div>
                     <?php endif; ?>
                 </div>
+
+                <div class="pds-toolbar-spacer"></div>
+
+                <div class="pds-toolbar-group pds-toolbar-sync">
+                    <div class="pds-active-users" title="<?php _e('Users viewing this table', 'pds-post-tables'); ?>">
+                        <span class="dashicons dashicons-groups"></span>
+                        <span class="pds-user-count">1</span>
+                        <div class="pds-user-list-dropdown">
+                            <div class="pds-user-list">
+                                <span class="pds-user-list-empty"><?php _e('Only you are viewing this table', 'pds-post-tables'); ?></span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="pds-sync-status" title="<?php _e('Real-time sync status', 'pds-post-tables'); ?>">
+                        <span class="pds-sync-dot pds-sync-connecting"></span>
+                        <span class="pds-sync-text"><?php _e('Connecting...', 'pds-post-tables'); ?></span>
+                    </div>
+                </div>
             </div>
             <?php else : ?>
-            <?php 
+            <?php
             $show_toolbar = ($config['settings']['export_csv'] ?? false) || ($config['settings']['allow_column_toggle'] ?? true);
-            if ($show_toolbar) : 
+            if ($show_toolbar) :
             ?>
             <div class="pds-table-toolbar pds-toolbar-simple">
                 <?php if ($config['settings']['allow_column_toggle'] ?? true) : ?>
