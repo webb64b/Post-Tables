@@ -211,6 +211,17 @@ class PDS_Post_Tables_Realtime_Sync {
 
         // Also update last modified timestamp
         update_post_meta($table_id, '_pds_table_last_modified', time());
+
+        // Fire action for automation system to hook into
+        do_action('pds_field_changed', [
+            'table_id' => $table_id,
+            'post_id' => $post_id,
+            'field_key' => $field_key,
+            'old_value' => $old_value,
+            'new_value' => $new_value,
+            'user_id' => $user_id,
+            'user_name' => $user ? $user->display_name : 'Unknown',
+        ]);
     }
 
     /**
