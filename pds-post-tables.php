@@ -5,6 +5,8 @@
  * Version: 1.0.0
  * Author: PDS Build
  * Text Domain: pds-post-tables
+ * GitHub Plugin URI: https://github.com/webb64b/Post-Tables
+ * Primary Branch:    main
  */
 
 if (!defined('ABSPATH')) {
