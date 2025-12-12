@@ -2,7 +2,7 @@
 /**
  * Plugin Name: PDS Post Tables
  * Description: Display and edit WordPress posts in Excel-like tables with customizable columns and conditional formatting
- * Version: 1.0.6
+ * Version: 1.0.7
  * Author: PDS Build
  * Text Domain: pds-post-tables
  * GitHub Plugin URI: https://github.com/webb64b/Post-Tables
@@ -13,7 +13,7 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
-define('PDS_POST_TABLES_VERSION', '1.4.6');
+define('PDS_POST_TABLES_VERSION', '1.4.7');
 define('PDS_POST_TABLES_PATH', plugin_dir_path(__FILE__));
 define('PDS_POST_TABLES_URL', plugin_dir_url(__FILE__));
 

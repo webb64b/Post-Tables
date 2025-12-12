@@ -297,14 +297,30 @@
             const currentValue = cell.getValue() || '';
             const field = cell.getField();
             const postId = cell.getRow().getData().ID;
-            
-            // Create editor container
+
+            // Get cell position using getBoundingClientRect for accurate positioning
+            // This works correctly even with frozen columns that use position:sticky
+            const cellRect = cellEl.getBoundingClientRect();
+
+            // Create editor container with fixed positioning based on cell's viewport position
             const editorContainer = document.createElement('div');
             editorContainer.className = 'pds-inline-editor';
-            editorContainer.style.cssText = 'position:absolute;top:0;left:0;right:0;bottom:0;z-index:100;background:#fff;display:flex;align-items:center;padding:2px;';
-            
+            editorContainer.style.cssText = `
+                position: fixed;
+                top: ${cellRect.top}px;
+                left: ${cellRect.left}px;
+                width: ${cellRect.width}px;
+                height: ${cellRect.height}px;
+                z-index: 10000;
+                background: #fff;
+                display: flex;
+                align-items: center;
+                padding: 2px;
+                box-sizing: border-box;
+            `;
+
             let editor;
-            
+
             if (type === 'date') {
                 editor = document.createElement('input');
                 editor.type = 'date';
@@ -359,17 +375,19 @@
                 editor.style.cssText = 'width:100%;padding:4px;border:1px solid #0073aa;border-radius:2px;';
                 editor.value = currentValue;
             }
-            
+
             editorContainer.appendChild(editor);
-            
-            // Position relative to cell
-            cellEl.style.position = 'relative';
-            cellEl.appendChild(editorContainer);
-            
+
+            // Append to body instead of cell to avoid positioning issues with frozen columns
+            document.body.appendChild(editorContainer);
+
+            // Store reference to editor container on cell for cleanup
+            cellEl._pdsEditorContainer = editorContainer;
+
             // Focus editor
             editor.focus();
             if (editor.select) editor.select();
-            
+
             // For date inputs, try to show picker
             if ((type === 'date' || type === 'datetime') && editor.showPicker) {
                 try { editor.showPicker(); } catch (e) {}
