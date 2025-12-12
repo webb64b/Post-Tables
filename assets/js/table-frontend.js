@@ -210,6 +210,7 @@
             this.table.on('tableBuilt', () => {
                 this.initColumnToggle();
                 this.initBatchSave();
+                this.initStickyScrollbar();
             });
             
             // Toolbar (if user can edit)
@@ -1757,6 +1758,116 @@
             
             // Initialize UI state
             this.updatePendingChangesUI();
+        }
+
+        /**
+         * Initialize sticky scrollbar for horizontal scrolling
+         * Creates a fixed scrollbar at the bottom of the viewport
+         */
+        initStickyScrollbar() {
+            const settings = this.config.settings || {};
+
+            // Check if sticky scrollbar is enabled
+            if (settings.scrollbar_position !== 'sticky') {
+                return;
+            }
+
+            // Get the table holder element (where horizontal scroll happens)
+            const tableHolder = this.container.querySelector('.tabulator-tableholder');
+            if (!tableHolder) {
+                return;
+            }
+
+            // Create sticky scrollbar element
+            this.stickyScrollbar = document.createElement('div');
+            this.stickyScrollbar.className = 'pds-sticky-scrollbar';
+            this.stickyScrollbar.innerHTML = '<div class="pds-sticky-scrollbar-inner"></div>';
+            document.body.appendChild(this.stickyScrollbar);
+
+            // Add class to body
+            document.body.classList.add('pds-has-sticky-scrollbar');
+
+            // Add class to table container to hide its native scrollbar
+            this.container.classList.add('pds-using-sticky-scrollbar');
+
+            const scrollbarInner = this.stickyScrollbar.querySelector('.pds-sticky-scrollbar-inner');
+
+            // Sync scrollbar width with table content width
+            const updateScrollbarWidth = () => {
+                const scrollWidth = tableHolder.scrollWidth;
+                const clientWidth = tableHolder.clientWidth;
+
+                scrollbarInner.style.width = scrollWidth + 'px';
+                this.stickyScrollbar.style.width = clientWidth + 'px';
+                this.stickyScrollbar.style.left = this.container.getBoundingClientRect().left + 'px';
+
+                // Show/hide based on whether scrolling is needed
+                if (scrollWidth > clientWidth) {
+                    this.stickyScrollbar.classList.add('pds-scrollbar-visible');
+                } else {
+                    this.stickyScrollbar.classList.remove('pds-scrollbar-visible');
+                }
+            };
+
+            // Check if table is in viewport
+            const isTableInViewport = () => {
+                const rect = this.container.getBoundingClientRect();
+                const viewportHeight = window.innerHeight;
+
+                // Table is in viewport if its top is above viewport bottom
+                // and its bottom is below viewport top
+                return rect.top < viewportHeight && rect.bottom > 0;
+            };
+
+            // Update visibility based on scroll position
+            const updateVisibility = () => {
+                if (isTableInViewport()) {
+                    updateScrollbarWidth();
+                } else {
+                    this.stickyScrollbar.classList.remove('pds-scrollbar-visible');
+                }
+            };
+
+            // Sync scroll positions
+            let isSyncing = false;
+
+            this.stickyScrollbar.addEventListener('scroll', () => {
+                if (isSyncing) return;
+                isSyncing = true;
+                tableHolder.scrollLeft = this.stickyScrollbar.scrollLeft;
+                isSyncing = false;
+            });
+
+            tableHolder.addEventListener('scroll', () => {
+                if (isSyncing) return;
+                isSyncing = true;
+                this.stickyScrollbar.scrollLeft = tableHolder.scrollLeft;
+                isSyncing = false;
+            });
+
+            // Initial setup
+            updateScrollbarWidth();
+            updateVisibility();
+
+            // Update on resize
+            window.addEventListener('resize', () => {
+                updateScrollbarWidth();
+                updateVisibility();
+            });
+
+            // Update on scroll
+            window.addEventListener('scroll', updateVisibility);
+
+            // Update when table redraws (e.g., columns change)
+            this.table.on('renderComplete', updateScrollbarWidth);
+
+            // Cleanup on destroy
+            this.table.on('tableDestroyed', () => {
+                if (this.stickyScrollbar && this.stickyScrollbar.parentNode) {
+                    this.stickyScrollbar.parentNode.removeChild(this.stickyScrollbar);
+                }
+                document.body.classList.remove('pds-has-sticky-scrollbar');
+            });
         }
 
         /**

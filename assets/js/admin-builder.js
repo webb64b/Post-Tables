@@ -110,8 +110,10 @@
         // Populate column field selects
         $('.pds-column-field-select').each(function() {
             const $select = $(this);
-            const currentValue = $select.closest('.pds-column-row').find('.pds-column-field-key').val();
-            
+            const $row = $select.closest('.pds-column-row');
+            const currentFieldKey = $row.find('.pds-column-field-key').val();
+            const currentSource = $row.find('.pds-column-source').val();
+
             $select.empty();
             $select.append('<option value="">' + pdsPostTablesAdmin.i18n.selectField + '</option>');
 
@@ -119,18 +121,18 @@
             for (const source in availableFields) {
                 const fields = availableFields[source];
                 const sourceLabel = getSourceLabel(source);
-                
+
                 if (Object.keys(fields).length === 0) continue;
-                
+
                 const $group = $('<optgroup>').attr('label', sourceLabel);
-                
+
                 // Sort fields alphabetically by label
                 const sortedKeys = Object.keys(fields).sort((a, b) => {
                     const labelA = (fields[a].label || a).toLowerCase();
                     const labelB = (fields[b].label || b).toLowerCase();
                     return labelA.localeCompare(labelB);
                 });
-                
+
                 for (const fieldKey of sortedKeys) {
                     const field = fields[fieldKey];
                     const $option = $('<option>')
@@ -139,14 +141,15 @@
                         .data('source', source)
                         .data('type', field.type)
                         .data('options', field.options || {});
-                    
-                    if (fieldKey === currentValue) {
+
+                    // Match both field_key AND source to select the correct option
+                    if (fieldKey === currentFieldKey && source === currentSource) {
                         $option.prop('selected', true);
                     }
-                    
+
                     $group.append($option);
                 }
-                
+
                 $select.append($group);
             }
         });

@@ -716,9 +716,31 @@ class PDS_Post_Tables_Admin_UI {
                     <?php _e('Enable CSV export', 'pds-post-tables'); ?>
                 </label>
             </p>
-            
+
             <hr>
-            
+
+            <p><strong><?php _e('Scrollbar Position', 'pds-post-tables'); ?></strong></p>
+
+            <p>
+                <label>
+                    <input type="radio" name="pds_settings[scrollbar_position]" value="default" <?php checked($settings['scrollbar_position'] ?? 'default', 'default'); ?>>
+                    <?php _e('Default - Scrollbar at bottom of table', 'pds-post-tables'); ?>
+                </label>
+            </p>
+
+            <p>
+                <label>
+                    <input type="radio" name="pds_settings[scrollbar_position]" value="sticky" <?php checked($settings['scrollbar_position'] ?? 'default', 'sticky'); ?>>
+                    <?php _e('Sticky - Scrollbar fixed to bottom of screen', 'pds-post-tables'); ?>
+                </label>
+            </p>
+
+            <p class="description" style="margin-left: 20px;">
+                <?php _e('Sticky scrollbar is useful for long tables where you would otherwise need to scroll to the bottom to access the horizontal scrollbar.', 'pds-post-tables'); ?>
+            </p>
+
+            <hr>
+
             <p><strong><?php _e('Save Behavior', 'pds-post-tables'); ?></strong></p>
             
             <p>
@@ -941,6 +963,7 @@ class PDS_Post_Tables_Admin_UI {
                 'group_start_open' => !empty($_POST['pds_settings']['group_start_open']),
                 'allow_column_toggle' => !empty($_POST['pds_settings']['allow_column_toggle']),
                 'persist_state' => !empty($_POST['pds_settings']['persist_state']),
+                'scrollbar_position' => in_array($_POST['pds_settings']['scrollbar_position'] ?? 'default', ['default', 'sticky']) ? $_POST['pds_settings']['scrollbar_position'] : 'default',
                 'save_mode' => in_array($_POST['pds_settings']['save_mode'] ?? 'immediate', ['immediate', 'batch']) ? $_POST['pds_settings']['save_mode'] : 'immediate',
                 'autosave_interval' => absint($_POST['pds_settings']['autosave_interval'] ?? 5),
             ];

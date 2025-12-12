@@ -400,8 +400,38 @@
 }
 
 .pds-post-table .tabulator-header .tabulator-col {
-    background: transparent;
+    background: #f5f5f5;
     border-right: 1px solid #ddd;
+}
+
+/* Frozen columns - solid backgrounds and proper z-index to prevent overlap */
+.pds-post-table .tabulator-frozen {
+    background-color: #fff !important;
+}
+
+.pds-post-table .tabulator-frozen.tabulator-frozen-left {
+    border-right: 2px solid #ccc !important;
+    z-index: 10 !important;
+}
+
+.pds-post-table .tabulator-frozen.tabulator-frozen-right {
+    border-left: 2px solid #ccc !important;
+    z-index: 10 !important;
+}
+
+/* Frozen header cells need higher z-index than frozen data cells */
+.pds-post-table .tabulator-header .tabulator-frozen {
+    background-color: #f5f5f5 !important;
+    z-index: 11 !important;
+}
+
+/* Ensure even/odd row backgrounds don't make frozen cells transparent */
+.pds-post-table .tabulator-row.tabulator-row-even .tabulator-frozen {
+    background-color: #fafafa !important;
+}
+
+.pds-post-table .tabulator-row.tabulator-row-odd .tabulator-frozen {
+    background-color: #fff !important;
 }
 
 .pds-post-table .tabulator-header .tabulator-col:last-child {
@@ -1086,4 +1116,46 @@
     height: 16px;
     vertical-align: middle;
     margin-right: 3px;
+}
+
+/* Sticky Horizontal Scrollbar */
+.pds-sticky-scrollbar {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 16px;
+    background: #f5f5f5;
+    border-top: 1px solid #ddd;
+    z-index: 9999;
+    overflow-x: auto;
+    overflow-y: hidden;
+    display: none; /* Hidden by default, shown via JS */
+}
+
+.pds-sticky-scrollbar.pds-scrollbar-visible {
+    display: block;
+}
+
+.pds-sticky-scrollbar-inner {
+    height: 1px; /* Just enough to create scrollbar */
+}
+
+/* When sticky scrollbar is active, add padding to bottom of page */
+body.pds-has-sticky-scrollbar {
+    padding-bottom: 20px;
+}
+
+/* Hide the table's native scrollbar when using sticky scrollbar */
+.pds-post-table.pds-using-sticky-scrollbar {
+    overflow-x: hidden;
+}
+
+.pds-post-table.pds-using-sticky-scrollbar .tabulator {
+    overflow-x: hidden;
+}
+
+/* Ensure the tabulator holder doesn't show scrollbar either */
+.pds-post-table.pds-using-sticky-scrollbar .tabulator .tabulator-tableholder {
+    overflow-x: hidden !important;
 }

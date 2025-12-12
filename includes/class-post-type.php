@@ -124,6 +124,7 @@ class PDS_Post_Tables_Post_Type {
             'group_start_open' => true,
             'allow_column_toggle' => true,
             'persist_state' => true,
+            'scrollbar_position' => 'default',
             'save_mode' => 'immediate',
             'autosave_interval' => 5,
         ];
