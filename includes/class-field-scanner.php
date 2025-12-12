@@ -230,17 +230,25 @@ class PDS_Post_Tables_Field_Scanner {
                     'acf_key' => $field['key'],
                     'acf_type' => $field['type'],
                 ];
-                
+
                 // Handle select/checkbox/radio options
                 if (isset($field['choices']) && !empty($field['choices'])) {
                     $field_config['options'] = $field['choices'];
                 }
-                
+
                 // Handle true/false default
                 if ($field['type'] === 'true_false') {
                     $field_config['type'] = 'boolean';
                 }
-                
+
+                // Handle user field
+                if ($field['type'] === 'user') {
+                    $field_config['multiple'] = !empty($field['multiple']);
+                    $field_config['return_format'] = $field['return_format'] ?? 'array';
+                    // Get user options for the dropdown
+                    $field_config['options'] = $this->get_user_options($field);
+                }
+
                 $fields[$field['name']] = $field_config;
             }
         }
@@ -269,11 +277,40 @@ class PDS_Post_Tables_Field_Scanner {
             'radio' => 'select',
             'button_group' => 'select',
             'wysiwyg' => 'wysiwyg',
+            'user' => 'user',
         ];
-        
+
         return $map[$acf_type] ?? 'text';
     }
     
+    /**
+     * Get user options for ACF user field
+     */
+    private function get_user_options($field) {
+        $options = [];
+
+        // Build user query args based on ACF field settings
+        $args = ['fields' => ['ID', 'display_name']];
+
+        // ACF user field can restrict by role
+        if (!empty($field['role'])) {
+            $roles = is_array($field['role']) ? $field['role'] : [$field['role']];
+            // Filter out empty values
+            $roles = array_filter($roles);
+            if (!empty($roles)) {
+                $args['role__in'] = $roles;
+            }
+        }
+
+        $users = get_users($args);
+
+        foreach ($users as $user) {
+            $options[$user->ID] = $user->display_name;
+        }
+
+        return $options;
+    }
+
     /**
      * Map WordPress meta type to our internal type
      */

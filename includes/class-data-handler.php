@@ -489,12 +489,22 @@ class PDS_Post_Tables_Data_Handler {
         if ($source === 'acf' || $source === 'auto') {
             if (function_exists('get_field')) {
                 $value = get_field($field_key, $post->ID);
-                
+
                 if ($value !== null && $value !== false) {
                     // Handle ACF date fields
                     if (is_string($value) && preg_match('/^\d{8}$/', $value)) {
                         return date('Y-m-d', strtotime($value));
                     }
+
+                    // Handle ACF user fields - normalize to array of user IDs
+                    // ACF user fields can return: array of user arrays, WP_User objects, or just IDs
+                    if (function_exists('acf_get_field')) {
+                        $acf_field = acf_get_field($field_key);
+                        if ($acf_field && $acf_field['type'] === 'user') {
+                            return $this->normalize_acf_user_value($value, !empty($acf_field['multiple']));
+                        }
+                    }
+
                     return $value;
                 }
             }
@@ -549,12 +559,12 @@ class PDS_Post_Tables_Data_Handler {
         // ACF fields
         if ($source === 'acf' && function_exists('update_field')) {
             $field_info = $this->field_scanner->get_field_info($post->post_type, $field_key);
-            
+
             // Handle boolean values
             if (isset($field_info['acf_type']) && $field_info['acf_type'] === 'true_false') {
                 $value = filter_var($value, FILTER_VALIDATE_BOOLEAN) ? 1 : 0;
             }
-            
+
             // Handle date values
             if (isset($field_info['acf_type']) && $field_info['acf_type'] === 'date_picker') {
                 // ACF expects Ymd format
@@ -562,7 +572,23 @@ class PDS_Post_Tables_Data_Handler {
                     $value = str_replace('-', '', $value);
                 }
             }
-            
+
+            // Handle user field values - ACF stores user IDs
+            if (isset($field_info['acf_type']) && $field_info['acf_type'] === 'user') {
+                // Convert to proper format for ACF
+                if (is_array($value)) {
+                    // Multiple users - ensure all are integers
+                    $value = array_map('intval', array_filter($value));
+                } elseif (!empty($value)) {
+                    // Single user
+                    $is_multiple = !empty($field_info['multiple']);
+                    $value = $is_multiple ? [(int) $value] : (int) $value;
+                } else {
+                    // Empty value
+                    $value = !empty($field_info['multiple']) ? [] : null;
+                }
+            }
+
             $result = update_field($field_key, $value, $post_id);
             return $result !== false;
         }
@@ -572,6 +598,40 @@ class PDS_Post_Tables_Data_Handler {
         return $result !== false;
     }
     
+    /**
+     * Normalize ACF user field value to user ID(s)
+     * ACF can return user arrays, WP_User objects, or just IDs depending on return_format setting
+     */
+    private function normalize_acf_user_value($value, $is_multiple = false) {
+        if (empty($value)) {
+            return $is_multiple ? [] : null;
+        }
+
+        // Ensure we're working with an array for consistent processing
+        $users = is_array($value) && !isset($value['ID']) ? $value : [$value];
+        $user_ids = [];
+
+        foreach ($users as $user) {
+            if (is_numeric($user)) {
+                // Already a user ID
+                $user_ids[] = (int) $user;
+            } elseif (is_array($user) && isset($user['ID'])) {
+                // User array format
+                $user_ids[] = (int) $user['ID'];
+            } elseif (is_object($user) && isset($user->ID)) {
+                // WP_User object format
+                $user_ids[] = (int) $user->ID;
+            }
+        }
+
+        // Return single value or array based on field setting
+        if ($is_multiple) {
+            return $user_ids;
+        }
+
+        return !empty($user_ids) ? $user_ids[0] : null;
+    }
+
     /**
      * Update core post field
      */

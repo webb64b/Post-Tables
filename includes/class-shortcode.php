@@ -251,7 +251,8 @@ class PDS_Post_Tables_Shortcode {
             // Start with the stored column type
             $column_type = $column['type'];
 
-            // For ACF fields, re-check the actual field type to catch WYSIWYG fields (unless overridden)
+            // For ACF fields, re-check the actual field type to catch WYSIWYG/user fields (unless overridden)
+            $acf_field = null;
             if (!$type_override && $column['source'] === 'acf' && function_exists('acf_get_field')) {
                 $acf_field = acf_get_field($column['field_key']);
                 if ($acf_field && isset($acf_field['type'])) {
@@ -265,6 +266,7 @@ class PDS_Post_Tables_Shortcode {
                         'select' => 'select',
                         'checkbox' => 'select',
                         'radio' => 'select',
+                        'user' => 'user',
                     ];
                     if (isset($acf_type_map[$acf_field['type']])) {
                         $column_type = $acf_type_map[$acf_field['type']];
@@ -319,9 +321,21 @@ class PDS_Post_Tables_Shortcode {
             // Store column type for formatting (uses override if set)
             $col_def['fieldType'] = $column_type;
 
-            // Store options for select fields ONLY
+            // Store options for select fields
             if (!empty($column['options']) && $column_type === 'select') {
                 $col_def['fieldOptions'] = $column['options'];
+            }
+
+            // Handle user fields - pass options and multiple setting
+            if ($column_type === 'user') {
+                // Get user options if not already set
+                if (!empty($column['options'])) {
+                    $col_def['fieldOptions'] = $column['options'];
+                } elseif ($acf_field) {
+                    // Build user options from ACF field settings
+                    $col_def['fieldOptions'] = $this->get_user_options_for_field($acf_field);
+                }
+                $col_def['multiple'] = !empty($column['multiple']) || ($acf_field && !empty($acf_field['multiple']));
             }
 
             $columns[] = $col_def;
@@ -329,7 +343,34 @@ class PDS_Post_Tables_Shortcode {
 
         return $columns;
     }
-    
+
+    /**
+     * Get user options for ACF user field
+     */
+    private function get_user_options_for_field($acf_field) {
+        $options = [];
+
+        // Build user query args based on ACF field settings
+        $args = ['fields' => ['ID', 'display_name']];
+
+        // ACF user field can restrict by role
+        if (!empty($acf_field['role'])) {
+            $roles = is_array($acf_field['role']) ? $acf_field['role'] : [$acf_field['role']];
+            $roles = array_filter($roles);
+            if (!empty($roles)) {
+                $args['role__in'] = $roles;
+            }
+        }
+
+        $users = get_users($args);
+
+        foreach ($users as $user) {
+            $options[$user->ID] = $user->display_name;
+        }
+
+        return $options;
+    }
+
     /**
      * Get Tabulator sorter for field type
      */
@@ -341,8 +382,9 @@ class PDS_Post_Tables_Shortcode {
             'datetime' => 'datetime',
             'boolean' => 'boolean',
             'select' => 'string',
+            'user' => 'string',
         ];
-        
+
         return $sorters[$type] ?? 'string';
     }
     

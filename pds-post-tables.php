@@ -2,7 +2,7 @@
 /**
  * Plugin Name: PDS Post Tables
  * Description: Display and edit WordPress posts in Excel-like tables with customizable columns and conditional formatting
- * Version: 1.0.7
+ * Version: 1.0.8
  * Author: PDS Build
  * Text Domain: pds-post-tables
  * GitHub Plugin URI: https://github.com/webb64b/Post-Tables
@@ -13,7 +13,7 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
-define('PDS_POST_TABLES_VERSION', '1.4.7');
+define('PDS_POST_TABLES_VERSION', '1.4.8');
 define('PDS_POST_TABLES_PATH', plugin_dir_path(__FILE__));
 define('PDS_POST_TABLES_URL', plugin_dir_url(__FILE__));
 
@@ -397,7 +397,8 @@ class PDS_Post_Tables {
             // Start with the stored column type
             $column_type = $column['type'];
 
-            // For ACF fields, re-check the actual field type to catch WYSIWYG fields (unless overridden)
+            // For ACF fields, re-check the actual field type to catch WYSIWYG/user fields (unless overridden)
+            $acf_field = null;
             if (!$type_override && $column['source'] === 'acf' && function_exists('acf_get_field')) {
                 $acf_field = acf_get_field($column['field_key']);
                 if ($acf_field && isset($acf_field['type'])) {
@@ -411,6 +412,7 @@ class PDS_Post_Tables {
                         'select' => 'select',
                         'checkbox' => 'select',
                         'radio' => 'select',
+                        'user' => 'user',
                     ];
                     if (isset($acf_type_map[$acf_field['type']])) {
                         $column_type = $acf_type_map[$acf_field['type']];
@@ -465,9 +467,19 @@ class PDS_Post_Tables {
             // Store column type for formatting (uses override if set)
             $col_def['fieldType'] = $column_type;
 
-            // Store options for select fields ONLY
+            // Store options for select fields
             if (!empty($column['options']) && $column_type === 'select') {
                 $col_def['fieldOptions'] = $column['options'];
+            }
+
+            // Handle user fields - pass options and multiple setting
+            if ($column_type === 'user') {
+                if (!empty($column['options'])) {
+                    $col_def['fieldOptions'] = $column['options'];
+                } elseif ($acf_field) {
+                    $col_def['fieldOptions'] = $this->get_user_options_for_acf_field($acf_field);
+                }
+                $col_def['multiple'] = !empty($column['multiple']) || ($acf_field && !empty($acf_field['multiple']));
             }
 
             $columns[] = $col_def;
@@ -475,7 +487,30 @@ class PDS_Post_Tables {
 
         return $columns;
     }
-    
+
+    /**
+     * Get user options for ACF user field
+     */
+    private function get_user_options_for_acf_field($acf_field) {
+        $options = [];
+        $args = ['fields' => ['ID', 'display_name']];
+
+        if (!empty($acf_field['role'])) {
+            $roles = is_array($acf_field['role']) ? $acf_field['role'] : [$acf_field['role']];
+            $roles = array_filter($roles);
+            if (!empty($roles)) {
+                $args['role__in'] = $roles;
+            }
+        }
+
+        $users = get_users($args);
+        foreach ($users as $user) {
+            $options[$user->ID] = $user->display_name;
+        }
+
+        return $options;
+    }
+
     private function get_sorter_type($type) {
         $sorters = [
             'text' => 'string',
@@ -484,6 +519,7 @@ class PDS_Post_Tables {
             'datetime' => 'datetime',
             'boolean' => 'boolean',
             'select' => 'string',
+            'user' => 'string',
         ];
         return $sorters[$type] ?? 'string';
     }

@@ -270,7 +270,12 @@
                     // Dropdown select
                     this.openInlineEditor(cell, 'list', colConfig.fieldOptions);
                     break;
-                    
+
+                case 'userMulti':
+                    // Multi-select user picker
+                    this.openUserMultiEditor(cell, colConfig.fieldOptions);
+                    break;
+
                 case 'tickCross':
                     // Checkbox - just toggle
                     this.toggleCheckbox(cell);
@@ -441,7 +446,127 @@
                 editor.addEventListener('change', saveAndClose);
             }
         }
-        
+
+        /**
+         * Open multi-select user editor (checkbox list)
+         */
+        openUserMultiEditor(cell, options) {
+            const cellEl = cell.getElement();
+            let currentValue = cell.getValue() || [];
+            const field = cell.getField();
+            const postId = cell.getRow().getData().ID;
+
+            // Ensure currentValue is an array
+            if (!Array.isArray(currentValue)) {
+                currentValue = currentValue ? [currentValue] : [];
+            }
+
+            // Convert to strings for comparison
+            const selectedIds = currentValue.map(id => String(id));
+
+            // Get cell position
+            const cellRect = cellEl.getBoundingClientRect();
+
+            // Create editor container
+            const editorContainer = document.createElement('div');
+            editorContainer.className = 'pds-inline-editor pds-user-multi-editor';
+            editorContainer.style.cssText = `
+                position: fixed;
+                top: ${cellRect.bottom}px;
+                left: ${cellRect.left}px;
+                min-width: ${Math.max(cellRect.width, 200)}px;
+                max-height: 250px;
+                overflow-y: auto;
+                z-index: 10000;
+                background: #fff;
+                border: 1px solid #0073aa;
+                border-radius: 4px;
+                box-shadow: 0 2px 10px rgba(0,0,0,0.15);
+                padding: 8px;
+            `;
+
+            // Build checkbox list
+            let checkboxHtml = '';
+            for (const userId in options) {
+                const userName = options[userId];
+                const isChecked = selectedIds.includes(String(userId));
+                checkboxHtml += `
+                    <label style="display:block;padding:4px 0;cursor:pointer;">
+                        <input type="checkbox" value="${userId}" ${isChecked ? 'checked' : ''} style="margin-right:8px;">
+                        ${this.escapeHtml(userName)}
+                    </label>
+                `;
+            }
+
+            // Add buttons
+            editorContainer.innerHTML = `
+                <div class="pds-user-multi-options">${checkboxHtml}</div>
+                <div style="margin-top:8px;padding-top:8px;border-top:1px solid #ddd;text-align:right;">
+                    <button type="button" class="pds-user-cancel-btn" style="padding:4px 12px;margin-right:4px;">Cancel</button>
+                    <button type="button" class="pds-user-save-btn" style="padding:4px 12px;background:#0073aa;color:#fff;border:none;border-radius:3px;cursor:pointer;">Save</button>
+                </div>
+            `;
+
+            // Append to body
+            document.body.appendChild(editorContainer);
+
+            // Store reference
+            cellEl._pdsEditorContainer = editorContainer;
+
+            const self = this;
+            let closed = false;
+
+            const closeEditor = () => {
+                if (closed) return;
+                closed = true;
+                if (editorContainer.parentNode) {
+                    editorContainer.parentNode.removeChild(editorContainer);
+                }
+            };
+
+            const saveAndClose = () => {
+                if (closed) return;
+
+                // Get selected values
+                const checkboxes = editorContainer.querySelectorAll('input[type="checkbox"]:checked');
+                const newValue = Array.from(checkboxes).map(cb => cb.value);
+
+                closeEditor();
+
+                // Compare arrays
+                const oldSorted = [...selectedIds].sort().join(',');
+                const newSorted = [...newValue].sort().join(',');
+
+                if (oldSorted !== newSorted) {
+                    cell.setValue(newValue);
+                }
+            };
+
+            // Event handlers
+            editorContainer.querySelector('.pds-user-cancel-btn').addEventListener('click', closeEditor);
+            editorContainer.querySelector('.pds-user-save-btn').addEventListener('click', saveAndClose);
+
+            // Close on click outside
+            const clickOutsideHandler = (e) => {
+                if (!editorContainer.contains(e.target) && !cellEl.contains(e.target)) {
+                    closeEditor();
+                    document.removeEventListener('click', clickOutsideHandler);
+                }
+            };
+            setTimeout(() => {
+                document.addEventListener('click', clickOutsideHandler);
+            }, 10);
+
+            // Close on Escape
+            const keyHandler = (e) => {
+                if (e.key === 'Escape') {
+                    closeEditor();
+                    document.removeEventListener('keydown', keyHandler);
+                }
+            };
+            document.addEventListener('keydown', keyHandler);
+        }
+
         /**
          * Toggle a checkbox/tickCross field
          */
@@ -835,6 +960,10 @@
                         case 'select':
                             editorType = 'list';
                             break;
+                        case 'user':
+                            // User field uses list editor (single or multi-select)
+                            editorType = col.multiple ? 'userMulti' : 'list';
+                            break;
                         case 'boolean':
                             editorType = 'tickCross';
                             break;
@@ -859,6 +988,7 @@
                     colId: colId,
                     editable: col.editable && this.config.canEdit,
                     editorType: editorType,
+                    multiple: col.multiple || false,
                 };
                 
                 // Build Tabulator column definition (only Tabulator-recognized options)
@@ -1193,6 +1323,27 @@
                     
                 case 'select':
                     // Map value to label if options available
+                    if (colConfig.fieldOptions && colConfig.fieldOptions[value]) {
+                        return colConfig.fieldOptions[value];
+                    }
+                    return value;
+
+                case 'user':
+                    // User field - display user name(s) instead of ID(s)
+                    if (!value) return '';
+
+                    // Handle array of user IDs (multi-select)
+                    if (Array.isArray(value)) {
+                        const names = value.map(id => {
+                            if (colConfig.fieldOptions && colConfig.fieldOptions[id]) {
+                                return colConfig.fieldOptions[id];
+                            }
+                            return id;
+                        });
+                        return names.join(', ');
+                    }
+
+                    // Single user ID
                     if (colConfig.fieldOptions && colConfig.fieldOptions[value]) {
                         return colConfig.fieldOptions[value];
                     }
